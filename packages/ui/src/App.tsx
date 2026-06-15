@@ -7,14 +7,14 @@ const RECORD_STORE = "records";
 const SETTINGS_STORE = "settingsFallback";
 const SETTINGS_KEY = "luna-body-tracker:settings";
 const SCHEMA_VERSION_KEY = "luna-body-tracker:schemaVersion";
-const APP_SCHEMA_VERSION = 7;
+const APP_SCHEMA_VERSION = 8;
 
 type Locale = "zh-CN" | "en-US";
 type ViewMode = "record" | "week";
 type ModuleId = "mood" | "water" | "sleep" | "foodPool" | "exercise" | "poop" | "weight" | "note";
-type FoodItem = readonly [key: string, label: string, unit: string, emoji: string, origin: "builtIn" | "custom"];
+type FoodItem = readonly [key: string, label: string, emoji: string, origin: "builtIn" | "custom"];
 type ExerciseItem = readonly [key: string, label: string, emoji: string, origin: "builtIn" | "custom"];
-type CustomFoodItem = { id: string; label: string; unit: string };
+type CustomFoodItem = { id: string; label: string };
 type CustomExerciseItem = { id: string; label: string };
 type RecordData = {
   id: string;
@@ -79,7 +79,6 @@ const messages = {
     foodPool: "food pool",
     customFood: "自定义食物",
     customFoodName: "咖啡 / 酒 / 甜食",
-    customFoodUnit: "份",
     exercise: "exercise",
     customExercise: "自定义运动",
     customExerciseName: "散步 / 拉伸 / 瑜伽",
@@ -114,7 +113,8 @@ const messages = {
     noteLine2: "食物份量是粗略的身体尺度估计，不是热量或克数记录。",
     noteLine3: "这些数据用于自我了解，不用于医疗诊断。",
     fieldNotes: "字段说明",
-    foodUnits: "食物单位",
+    waterUnit: "杯",
+    sleepUnit: "小时",
     overview: "最近概览",
     dailyRecords: "每日记录",
     recordedDays: "记录天数",
@@ -156,7 +156,6 @@ const messages = {
     foodPool: "food pool",
     customFood: "Custom Food",
     customFoodName: "coffee / wine / sweets",
-    customFoodUnit: "serving",
     exercise: "exercise",
     customExercise: "Custom Exercise",
     customExerciseName: "walk / stretch / yoga",
@@ -191,7 +190,8 @@ const messages = {
     noteLine2: "Food amounts are rough body-scale estimates, not calories or grams.",
     noteLine3: "This data is for self-understanding, not medical diagnosis.",
     fieldNotes: "Field Notes",
-    foodUnits: "Food Units",
+    waterUnit: "bowl",
+    sleepUnit: "hour",
     overview: "Overview",
     dailyRecords: "Daily Records",
     recordedDays: "Recorded days",
@@ -243,32 +243,32 @@ const optionCopy = {
   "zh-CN": {
     moods: { grin: "露齿笑", angry: "愤怒", cry: "流泪", smile: "微笑" },
     foods: {
-      vegetables: ["蔬菜", "拳"],
-      meat: ["肉类", "掌"],
-      grains: ["谷物", "拳"],
-      tubers: ["薯类", "拳"],
-      beans: ["豆类", "拳"],
-      dairy: ["奶制品", "杯"],
-      eggs: ["鸡蛋", "个"],
-      nuts: ["坚果", "把"],
-      oil: ["油", "拇指"],
-      seafood: ["海鲜", "份"]
+      vegetables: "蔬菜",
+      meat: "肉类",
+      grains: "谷物",
+      tubers: "薯类",
+      beans: "豆类",
+      dairy: "奶制品",
+      eggs: "鸡蛋",
+      nuts: "坚果",
+      oil: "油",
+      seafood: "海鲜"
     },
     exercise: { aerobic: "有氧", strength: "无氧" }
   },
   "en-US": {
     moods: { grin: "Grin", angry: "Angry", cry: "Crying", smile: "Soft smile" },
     foods: {
-      vegetables: ["Vegetables", "fist"],
-      meat: ["Protein", "palm"],
-      grains: ["Grains", "fist"],
-      tubers: ["Tubers", "fist"],
-      beans: ["Beans", "fist"],
-      dairy: ["Dairy", "cup"],
-      eggs: ["Eggs", "item"],
-      nuts: ["Nuts", "handful"],
-      oil: ["Oil", "thumb"],
-      seafood: ["Seafood", "serving"]
+      vegetables: "Vegetables",
+      meat: "Protein",
+      grains: "Grains",
+      tubers: "Tubers",
+      beans: "Beans",
+      dairy: "Dairy",
+      eggs: "Eggs",
+      nuts: "Nuts",
+      oil: "Oil",
+      seafood: "Seafood"
     },
     exercise: { aerobic: "Aerobic", strength: "Strength" }
   }
@@ -509,7 +509,7 @@ function WaterModule({ record, updateRecord, locale }: ModuleProps) {
   const count = record.waterCount ?? 0;
   return (
     <>
-      <CardTitle title={t.moduleLabels.water} />
+      <CardTitle title={t.moduleLabels.water} value={`${count}/8 ${t.waterUnit}`} />
       <div className="water-grid">
         {Array.from({ length: 8 }, (_, index) => {
           const value = index + 1;
@@ -557,7 +557,7 @@ function SleepModule({ record, updateRecord, locale }: ModuleProps) {
 
   return (
     <>
-      <CardTitle title={t.moduleLabels.sleep} />
+      <CardTitle title={t.moduleLabels.sleep} value={`${selectedSlots.length} ${t.sleepUnit}`} />
       <div className="sleep-grid">
         {SLEEP_LABELS.map((label, index) => {
           const slot = index + 1;
@@ -674,7 +674,7 @@ function FoodPoolModule({ record, settings, updateRecord, locale }: ModuleProps 
         ))}
       </div>
       <div className="food-grid">
-        {getFoodItems(settings).filter(([, , , , origin]) => origin === "builtIn").map(([key, label, , emoji]) => (
+        {getFoodItems(settings).filter(([, , , origin]) => origin === "builtIn").map(([key, label, emoji]) => (
           <button className={`food-chip ${foodPool[key] ? "is-active" : ""}`} key={key} type="button" onClick={() => toggleFood(key)}>
             <span className="chip-emoji">{emoji}</span>
             <span className="chip-main">{label}</span>
@@ -728,10 +728,11 @@ type ModuleProps = {
   locale: Locale;
 };
 
-function CardTitle({ title, privacy }: { title: string; privacy?: { hidden: boolean; label: string; onToggle: () => void } }) {
+function CardTitle({ title, value, privacy }: { title: string; value?: string; privacy?: { hidden: boolean; label: string; onToggle: () => void } }) {
   return (
     <div className="card-title">
       <h3>{title}</h3>
+      {value ? <span className="card-value">{value}</span> : null}
       {privacy ? (
         <button className="privacy-toggle" title={privacy.label} type="button" onClick={privacy.onToggle}>
           {privacy.hidden ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -749,7 +750,6 @@ function SettingsDialog(props: {
 }) {
   const { dialogRef, settings, persistSettings, resetAllData } = props;
   const [foodName, setFoodName] = useState("");
-  const [foodUnit, setFoodUnit] = useState("");
   const [exerciseName, setExerciseName] = useState("");
   const t = messages[settings.locale];
   const orderedModules = getOrderedModules(settings);
@@ -768,9 +768,8 @@ function SettingsDialog(props: {
   function addCustomFood() {
     const label = foodName.trim();
     if (!label) return;
-    const item = { id: `custom_${Date.now().toString(36)}`, label, unit: foodUnit.trim() || t.customFoodUnit };
+    const item = { id: `custom_${Date.now().toString(36)}`, label };
     setFoodName("");
-    setFoodUnit("");
     persistSettings({ ...settings, foodCustomItems: [...getCustomFoodItems(settings), item] });
   }
 
@@ -830,7 +829,6 @@ function SettingsDialog(props: {
           <h3>{t.customFood}</h3>
           <div className="custom-food-form">
             <input maxLength={12} placeholder={t.customFoodName} type="text" value={foodName} onChange={(event) => setFoodName(event.target.value)} />
-            <input maxLength={6} placeholder={t.customFoodUnit} type="text" value={foodUnit} onChange={(event) => setFoodUnit(event.target.value)} />
             <button className="primary-button" type="button" onClick={addCustomFood}>
               <Plus size={16} />
               <span>{t.add}</span>
@@ -838,7 +836,7 @@ function SettingsDialog(props: {
           </div>
           <CustomList
             emptyText={t.noCustomItems}
-            items={getCustomFoodItems(settings).map((item) => ({ id: item.id, label: `${item.label} / ${item.unit}` }))}
+            items={getCustomFoodItems(settings)}
             removeLabel={t.remove}
             onRemove={(id) => persistSettings({ ...settings, foodCustomItems: getCustomFoodItems(settings).filter((item) => item.id !== id) })}
           />
@@ -918,10 +916,10 @@ function WeekDayRow({ dateKey, record = emptyWeekRecord(dateKey), settings }: { 
     .map(([key, label]) => <p key={key}><span>{label}</span>{String(meals[key]).trim()}</p>);
   const foodItems = getFoodItems(settings).filter(([key]) => record.foodPool?.[key]);
   const mood = record.mood ? `${moodEmoji(record.mood)} ${moodLabel(record.mood, settings.locale)}` : "";
-  const sleep = weekSleepTextLine(record);
+  const sleep = weekSleepTextLine(record, settings.locale);
   const exercise = exerciseLabel(record.exercise ?? {}, settings);
   const poop = typeof record.poopCount === "number" ? weekPoopLabel(record.poopCount) : "";
-  const water = typeof record.waterCount === "number" ? `${record.waterCount}/8` : "";
+  const water = typeof record.waterCount === "number" ? `${record.waterCount}/8 ${t.waterUnit}` : "";
   const weight = typeof record.weightKg === "number" ? `${record.weightKg} KG` : "";
   const poopHidden = getRecordPrivacy(record, "poop");
   const weightHidden = getRecordPrivacy(record, "weight");
@@ -1086,9 +1084,9 @@ function normalizeSettings(settings: unknown): Settings {
 
 function getNormalizedCustomFoodItems(items: unknown = []): CustomFoodItem[] {
   return (Array.isArray(items) ? items : []).map((item) => {
-    if (typeof item === "string") return { id: `custom_${slugify(item)}`, label: item, unit: "份" };
+    if (typeof item === "string") return { id: `custom_${slugify(item)}`, label: item };
     const value = item as Partial<CustomFoodItem>;
-    return { id: value.id || `custom_${slugify(value.label ?? "")}`, label: value.label ?? "", unit: value.unit || "份" };
+    return { id: value.id || `custom_${slugify(value.label ?? "")}`, label: value.label ?? "" };
   }).filter((item) => item.id && item.label);
 }
 
@@ -1121,10 +1119,10 @@ function getCustomExerciseItems(settings: Settings) {
 }
 
 function getFoodItems(settings: Settings): FoodItem[] {
-  const customItems: FoodItem[] = getCustomFoodItems(settings).map((item) => [item.id, item.label, item.unit, "✦", "custom"] as const);
+  const customItems: FoodItem[] = getCustomFoodItems(settings).map((item) => [item.id, item.label, "✦", "custom"] as const);
   const builtInItems: FoodItem[] = FOOD_ITEMS.map(([key, emoji]) => {
-    const [label, unit] = optionCopy[settings.locale].foods[key];
-    return [key, label, unit, emoji, "builtIn"] as const;
+    const label = optionCopy[settings.locale].foods[key];
+    return [key, label, emoji, "builtIn"] as const;
   });
   return builtInItems.concat(customItems);
 }
@@ -1170,15 +1168,20 @@ function toExportRecord(record: RecordData) {
     exported.recordedModules.push("mood");
   }
   if (typeof record.waterCount === "number") {
-    exported.water = { cups: record.waterCount, targetCups: 8 };
+    exported.water = { value: record.waterCount, unit: "bowl", targetValue: 8 };
     exported.recordedModules.push("water");
   }
   if (typeof record.sleepHours === "number") {
-    exported.sleep = { hours: record.sleepHours };
+    exported.sleep = { value: record.sleepHours, unit: "hour" };
     exported.recordedModules.push("sleep");
   }
   if (Array.isArray(record.sleepSlots) && record.sleepSlots.length) {
-    exported.sleep = { slots: record.sleepSlots, labels: record.sleepSlots.map((slot) => SLEEP_LABELS[slot - 1]).filter(Boolean) };
+    exported.sleep = {
+      value: record.sleepSlots.length,
+      unit: "hour",
+      slots: record.sleepSlots,
+      labels: record.sleepSlots.map((slot) => SLEEP_LABELS[slot - 1]).filter(Boolean)
+    };
     if (!exported.recordedModules.includes("sleep")) exported.recordedModules.push("sleep");
   }
   if (record.exercise && Object.values(record.exercise).some(Boolean)) {
@@ -1223,8 +1226,8 @@ function createSummaryMarkdown(records: RecordData[], selectedDate: string, sett
     `### ${record.date}`,
     "",
     `- ${t.moduleLabels.mood}: ${moodLabel(record.mood, settings.locale)}`,
-    `- ${t.moduleLabels.water}: ${record.waterCount ?? "--"} / 8`,
-    `- ${t.moduleLabels.sleep}: ${sleepTextLine(record) || "--"}`,
+    `- ${t.moduleLabels.water}: ${typeof record.waterCount === "number" ? `${record.waterCount}/8 ${t.waterUnit}` : "--"}`,
+    `- ${t.moduleLabels.sleep}: ${sleepTextLine(record, settings.locale) || "--"}`,
     `- ${t.moduleLabels.exercise}: ${exerciseLabel(record.exercise ?? {}, settings)}`,
     `- ${t.moduleLabels.weight}: ${typeof record.weightKg === "number" ? `${record.weightKg} kg` : "--"}`,
     `- ${t.moduleLabels.foodPool}: ${foodTextLine(record.foodPool, settings) || "--"}`,
@@ -1244,11 +1247,6 @@ function createSummaryMarkdown(records: RecordData[], selectedDate: string, sett
     t.noteLine1,
     t.noteLine2,
     t.noteLine3,
-    "",
-    `## ${t.foodUnits}`,
-    "",
-    getFoodItems(settings).map(([, label, unit]) => `- ${label}: ${unit}`).join("\n"),
-    "",
     `## ${t.overview}`,
     "",
     `- ${t.recordedDays}: ${recordedDays} / ${sorted.length}`,
@@ -1320,17 +1318,19 @@ function getSleepSlots(record: RecordData) {
   return [];
 }
 
-function sleepTextLine(record: RecordData) {
+function sleepTextLine(record: RecordData, locale: Locale) {
   const slots = getSleepSlots(record);
+  if (!slots.length && typeof record.sleepHours === "number") return `${record.sleepHours} ${messages[locale].sleepUnit}`;
   if (!slots.length) return "";
-  return slots.map((slot) => SLEEP_LABELS[slot - 1]).filter(Boolean).join(", ");
+  return `${slots.map((slot) => SLEEP_LABELS[slot - 1]).filter(Boolean).join(", ")} (${slots.length} ${messages[locale].sleepUnit})`;
 }
 
-function weekSleepTextLine(record: RecordData) {
+function weekSleepTextLine(record: RecordData, locale: Locale) {
   const slots = getSleepSlots(record);
+  if (!slots.length && typeof record.sleepHours === "number") return `${record.sleepHours} ${messages[locale].sleepUnit}`;
   if (!slots.length) return "";
   const slotText = slots.map((slot) => SLEEP_LABELS[slot - 1]).filter(Boolean).join(", ");
-  return `${slotText}, ${slots.length}h`;
+  return `${slotText}, ${slots.length} ${messages[locale].sleepUnit}`;
 }
 
 function poopLabel(value: number) {

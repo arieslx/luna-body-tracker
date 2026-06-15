@@ -3,15 +3,14 @@ import { z, type ZodError } from "zod";
 export const recordSourceSchema = z.enum(["extension", "web", "ai_skill", "device", "import"]);
 
 export const moodValueSchema = z.object({ value: z.string().min(1) }).strict();
-export const waterValueSchema = z.object({ cups: z.number().int().nonnegative(), targetCups: z.number().int().positive().optional() }).strict();
-export const sleepValueSchema = z.object({ hours: z.number().nonnegative() }).strict();
+export const waterValueSchema = z.object({ value: z.number().int().nonnegative(), unit: z.literal("bowl"), targetValue: z.number().int().positive().optional() }).strict();
+export const sleepValueSchema = z.object({ value: z.number().nonnegative(), unit: z.literal("hour") }).strict();
 export const weightValueSchema = z.object({ kg: z.number().positive() }).strict();
 export const foodPoolItemSchema = z
   .object({
     name: z.string().min(1),
     amount: z.number().nonnegative(),
-    label: z.string().optional(),
-    unit: z.string().optional()
+    label: z.string().optional()
   })
   .strict();
 export const foodPoolValueSchema = z.record(foodPoolItemSchema);

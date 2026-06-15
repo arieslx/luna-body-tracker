@@ -35,8 +35,8 @@ Example:
   "schemaVersion": 1,
   "modules": {
     "mood": { "value": "grin" },
-    "water": { "cups": 2, "targetCups": 8 },
-    "sleep": { "hours": 3 },
+    "water": { "value": 2, "unit": "bowl", "targetValue": 8 },
+    "sleep": { "value": 3, "unit": "hour" },
     "weight": { "kg": 73 },
     "poop": { "count": 2, "label": "2" },
     "note": {
@@ -154,12 +154,14 @@ export type MoodValue = {
 };
 
 export type WaterValue = {
-  cups: number;
-  targetCups?: number;
+  value: number;
+  unit: "bowl";
+  targetValue?: number;
 };
 
 export type SleepValue = {
-  hours: number;
+  value: number;
+  unit: "hour";
 };
 
 export type WeightValue = {
@@ -170,7 +172,6 @@ export type FoodPoolItem = {
   name: string;
   amount: number;
   label?: string;
-  unit?: string;
 };
 
 export type FoodPoolValue = Record<string, FoodPoolItem>;

@@ -3,10 +3,10 @@ import { parseDailyRecord, type DailyRecord } from "./daily-record";
 type ExtensionExportRecord = {
   date?: string;
   mood?: string;
-  water?: { cups?: number; targetCups?: number };
-  sleep?: { hours?: number; slots?: number[]; labels?: string[] };
+  water?: { value?: number; unit?: "bowl"; targetValue?: number; cups?: number; targetCups?: number };
+  sleep?: { value?: number; unit?: "hour"; hours?: number; slots?: number[]; labels?: string[] };
   weight?: { kg?: number };
-  foodPool?: Record<string, { name?: string; amount?: number; label?: string; unit?: string }>;
+  foodPool?: Record<string, { name?: string; amount?: number; label?: string }>;
   meals?: Record<string, string>;
   foodNote?: string;
   poop?: { count?: number; label?: string };
@@ -24,8 +24,8 @@ export function migrateExtensionExportRecord(input: ExtensionExportRecord, timez
   const recordedModuleIds = new Set(input.recordedModules ?? []);
 
   if (input.mood) modules.mood = { value: input.mood };
-  if (input.water) modules.water = { cups: input.water.cups ?? 0, targetCups: input.water.targetCups };
-  if (input.sleep?.hours !== undefined) modules.sleep = { hours: input.sleep.hours };
+  if (input.water) modules.water = { value: input.water.value ?? input.water.cups ?? 0, unit: "bowl", targetValue: input.water.targetValue ?? input.water.targetCups };
+  if (input.sleep) modules.sleep = { value: input.sleep.value ?? input.sleep.hours ?? input.sleep.slots?.length ?? 0, unit: "hour" };
   if (input.weight?.kg !== undefined) modules.weight = { kg: input.weight.kg };
   if (input.foodPool) modules.foodPool = input.foodPool;
   if (input.meals) modules.meals = input.meals;

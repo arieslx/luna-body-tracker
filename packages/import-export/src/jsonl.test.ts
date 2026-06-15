@@ -25,7 +25,7 @@ const dailyRecord: DailyRecord = {
   schemaVersion: 1,
   modules: {
     mood: { value: "grin" },
-    water: { cups: 2, targetCups: 8 },
+    water: { value: 2, unit: "bowl", targetValue: 8 },
     exercise: { aerobic: { name: "有氧", done: true } },
     note: { text: "Slept late, woke early." },
     custom_energy: { value: "low" }

@@ -17,8 +17,8 @@ describe("DailyRecord schema", () => {
       schemaVersion: 1,
       modules: {
         mood: { value: "grin" },
-        water: { cups: 2, targetCups: 8 },
-        sleep: { hours: 3 },
+        water: { value: 2, unit: "bowl", targetValue: 8 },
+        sleep: { value: 3, unit: "hour" },
         weight: { kg: 73 },
         poop: { count: 2, label: "2" },
         note: { text: "Slept late, woke early." }
@@ -31,7 +31,7 @@ describe("DailyRecord schema", () => {
       }
     });
 
-    expect(result.modules.water).toEqual({ cups: 2, targetCups: 8 });
+    expect(result.modules.water).toEqual({ value: 2, unit: "bowl", targetValue: 8 });
   });
 
   it("reports invalid records with field paths", () => {
@@ -105,6 +105,8 @@ describe("extension migration", () => {
       schemaVersion: 1,
       modules: {
         mood: { value: "grin" },
+        water: { value: 2, unit: "bowl", targetValue: 8 },
+        sleep: { value: 3, unit: "hour" },
         note: { text: "Slept late, woke early." }
       }
     });
