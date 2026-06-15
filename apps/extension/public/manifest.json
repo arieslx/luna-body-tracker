@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Luna Body Tracker",
+  "description": "A calm offline new-tab body and mind tracker.",
+  "version": "0.2.0",
+  "permissions": ["storage"],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  }
+}

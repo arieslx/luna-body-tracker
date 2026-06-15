@@ -1,0 +1,17 @@
+{
+  "name": "luna-body-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first body and mind record system.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.12.1",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}
