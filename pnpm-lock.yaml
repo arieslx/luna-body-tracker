@@ -87,6 +87,28 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
+  harness:
+    dependencies:
+      '@luna-body-tracker/ai-skill-sdk':
+        specifier: workspace:*
+        version: link:../packages/ai-skill-sdk
+      '@luna-body-tracker/import-export':
+        specifier: workspace:*
+        version: link:../packages/import-export
+      '@luna-body-tracker/schema':
+        specifier: workspace:*
+        version: link:../packages/schema
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/ai-skill-sdk:
     dependencies:
       '@luna-body-tracker/schema':

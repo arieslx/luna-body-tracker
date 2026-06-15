@@ -114,16 +114,18 @@ Exit criteria:
 
 ## Phase 6: Harness
 
-- Add Vitest tests for packages
-- Add Playwright tests for extension and PWA workflows
-- Add fixtures for migration and import/export roundtrip
-- Add agent-run replay cases
+- Add `@luna-body-tracker/harness` as the shared validation package.
+- Add Vitest harness checks for schema, import/export, fixtures, build outputs, and AI replay.
+- Add fixtures for migration and import/export roundtrip.
+- Add extension/PWA build smoke tests that verify loadable extension output, PWA manifest, service worker, icons, and app shell assets.
+- Add agent-run replay cases for deterministic AI tool-call validation.
+- Keep browser-level Playwright workflow tests as the next harness upgrade once browser installation and CI runtime strategy are decided.
 
 Exit criteria:
 
 - Core schema tests pass
 - Import/export tests pass
-- Basic extension/PWA workflow is covered
+- Basic extension/PWA build and installability surfaces are covered
 - AI tool calls can be replayed deterministically
 
 ## Post-MVP Candidates

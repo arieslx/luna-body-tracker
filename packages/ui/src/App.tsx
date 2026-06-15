@@ -182,7 +182,7 @@ const messages = {
       dinner: "Dinner",
       snack: "Snack"
     },
-    summaryTitle: "Body Record Export",
+    summaryTitle: "Luna Body Tracker Export",
     exportedAt: "Exported at",
     range: "Range",
     notes: "Notes",
