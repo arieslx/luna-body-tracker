@@ -1,5 +1,5 @@
 {
-  "name": "@luna-body-tracker/ui",
+  "name": "@luna-body-tracker/sync-protocol",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,24 +9,19 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
-    },
-    "./styles.css": "./src/styles.css"
+    }
   },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@luna-body-tracker/import-export": "workspace:*",
     "@luna-body-tracker/schema": "workspace:*",
-    "@luna-body-tracker/sync-protocol": "workspace:*",
-    "lucide-react": "^0.468.0",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
   }
 }

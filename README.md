@@ -11,6 +11,7 @@ It helps people record daily body signals, mood, food, sleep, menstrual cycle, b
 - AI skill for agent-based reading, writing, validation, and summary
 - Local-first storage
 - JSONL and Markdown export
+- Optional self-hosted sync for extension and PWA
 - Extensible module system
 - System templates that can be hidden but not deleted
 - User custom modules that can be created and soft deleted
@@ -18,7 +19,7 @@ It helps people record daily body signals, mood, food, sleep, menstrual cycle, b
 
 ## Not In MVP
 
-- Cloud auto-sync
+- Third-party cloud auto-sync
 - Account system
 - Payment
 - Hardware device integration
@@ -34,11 +35,13 @@ luna-body-tracker/
     extension/
     web/
     skill/
+    sync-server/
 
   packages/
     schema/
     storage/
     import-export/
+    sync-protocol/
     plugin-api/
     ai-skill-sdk/
     ui/
@@ -64,6 +67,7 @@ luna-body-tracker/
 - IndexedDB for browser local storage
 - JSONL as the durable export format
 - Markdown as the human-readable export format
+- Versioned sync protocol for self-hosted extension/PWA sync
 - Vitest for package tests
 - Playwright for UI and workflow harness
 - MCP / OpenAPI / JSON-RPC compatible AI skill adapters
@@ -72,11 +76,8 @@ luna-body-tracker/
 
 - User data belongs to the user.
 - The default storage mode is local-first.
-- Cloud upload is explicit and manual in the MVP.
+- Sync is explicit, local-first, and optional.
 - Export formats should be open, readable, and stable.
 - System modules are product protocol, not disposable user data.
 - User custom modules are user-owned data and should never be hard deleted.
 - AI agents interact with data through controlled APIs, not direct storage access.
-
-### Planned / Not Started
-- [ ] app/skills/knowledge

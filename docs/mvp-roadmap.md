@@ -128,10 +128,42 @@ Exit criteria:
 - Basic extension/PWA build and installability surfaces are covered
 - AI tool calls can be replayed deterministically
 
+## Phase 7: Deployment, Self-hosted Sync, and Onboarding
+
+- Add deployment guides for the Chrome extension, PWA web app, and optional self-hosted sync service.
+- Add a non-technical onboarding guide that explains installation, daily use, backup, restore, and sync without requiring users to understand pnpm, schema, JSONL, ports, or deployment internals.
+- Keep JSONL import/export as the canonical backup and recovery path for both the extension and the PWA.
+- Add Chrome extension import support so users can restore or move data into the extension by selecting a JSONL backup file.
+- Add PWA import support so users can restore or move data into the web app from a JSONL backup file.
+- Treat direct browser message passing as a same-device convenience only, not as the primary cross-device sync design.
+- Add `packages/sync-protocol` to define versioned sync envelopes, payloads, validation results, cursors, profile IDs, device IDs, and replayable sync errors.
+- Add an optional `apps/sync-server` for NAS or private-server deployment behind a domain and HTTPS endpoint.
+- Support extension push/pull sync against the self-hosted sync server.
+- Support PWA push/pull sync against the same self-hosted sync server, including mobile home-screen usage.
+- Support multiple profiles on one self-hosted sync service so two people can share the same deployment while keeping records, modules, and AI context isolated.
+- Use profile-scoped sync keys for MVP instead of a full account system.
+- Validate all incoming sync payloads with `@luna-body-tracker/schema` before writing them to local storage or server storage.
+- Keep sync local-first: clients continue to work offline and reconcile explicitly when a sync endpoint is configured.
+- Start with append/merge sync based on stable IDs, `updatedAt`, and soft deletion metadata.
+- Document privacy boundaries and reserve future end-to-end encryption so the server can eventually store encrypted health records without reading their contents.
+- Add harness fixtures and replay tests for sync payload validation, invalid payload rejection, multi-profile isolation, and basic push/pull roundtrips.
+
+Exit criteria:
+
+- A non-technical user can install the Chrome extension, open the PWA on mobile, add it to the home screen, and move data by following a user-facing guide.
+- A developer can build the extension, deploy the PWA, and deploy the optional sync server to a NAS or private server behind a domain.
+- Extension and PWA can both import and export schema-compatible JSONL backups.
+- Extension can push and pull records/modules through the sync protocol when a sync endpoint, profile name, and sync key are configured.
+- PWA can push and pull records/modules through the same sync protocol from a different physical device.
+- Two profiles can use one sync server without reading or overwriting each other's records, modules, or AI context.
+- Invalid sync payloads fail with clear validation errors and do not overwrite local data.
+- JSONL import/export remains available even when sync is not configured or the server is offline.
+- Sync protocol behavior is covered by deterministic harness fixtures.
+
 ## Post-MVP Candidates
 
 - Manual cloud upload
-- Self-hosted sync
+- End-to-end encrypted sync
 - Advanced AI analysis
 - M5Stack device bridge
 - Gamified tracking

@@ -10,7 +10,8 @@
   "dependencies": {
     "@luna-body-tracker/ai-skill-sdk": "workspace:*",
     "@luna-body-tracker/import-export": "workspace:*",
-    "@luna-body-tracker/schema": "workspace:*"
+    "@luna-body-tracker/schema": "workspace:*",
+    "@luna-body-tracker/sync-protocol": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",

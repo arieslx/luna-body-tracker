@@ -610,6 +610,16 @@ h2 {
   border-radius: 10px;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .review-panel {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -907,6 +917,31 @@ h2 {
   outline: 0;
 }
 
+.sync-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(120px, 0.8fr) minmax(140px, 1fr);
+  gap: 10px;
+}
+
+.sync-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: rgba(29, 31, 33, 0.72);
+  font-size: 12px;
+}
+
+.sync-form input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.42);
+  border: 0;
+  border-radius: 10px;
+  outline: 0;
+}
+
 .custom-food-list {
   display: flex;
   flex-wrap: wrap;
@@ -1033,6 +1068,7 @@ h2 {
   .review-panel,
   .custom-food-form,
   .custom-exercise-form,
+  .sync-form,
   .meal-grid {
     grid-template-columns: 1fr;
   }

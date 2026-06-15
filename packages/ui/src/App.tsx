@@ -1,5 +1,12 @@
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Eye, EyeOff, Languages, Plus, SettingsIcon, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Eye, EyeOff, Languages, Plus, RefreshCw, SettingsIcon, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { parseJsonl, writeJsonl } from "@luna-body-tracker/import-export";
+import { systemModuleDefinitions, type DailyRecord, type ModuleDefinition } from "@luna-body-tracker/schema";
+import {
+  createSyncEnvelope,
+  syncPullResponseSchema,
+  syncPushResponseSchema
+} from "@luna-body-tracker/sync-protocol";
 
 const DB_NAME = "luna_body_tracker_db";
 const DB_VERSION = 1;
@@ -43,6 +50,11 @@ type Settings = {
   exerciseCustomItems: CustomExerciseItem[];
   privacyHidden: Record<string, boolean>;
   theme: Record<string, string>;
+  syncEndpoint: string;
+  syncProfileId: string;
+  syncKey: string;
+  syncDeviceId: string;
+  syncCursor: string;
 };
 
 const messages = {
@@ -59,6 +71,20 @@ const messages = {
     weekView: "周视图",
     exportJsonl: "导出 JSONL",
     exportMarkdown: "导出 Markdown",
+    importJsonl: "导入 JSONL",
+    syncNow: "同步",
+    syncSettings: "同步设置",
+    syncEndpoint: "同步地址",
+    syncEndpointPlaceholder: "https://tracker.example.com",
+    syncProfileId: "名字",
+    syncKey: "同步码",
+    syncReady: "同步配置已保存",
+    syncMissing: "请先在设置里填写同步地址、名字和同步码",
+    syncPushing: "正在同步",
+    syncComplete: "同步完成",
+    syncFailed: "同步失败",
+    importComplete: "导入完成",
+    importFailed: "导入失败",
     settings: "设置",
     layoutSettings: "布局设置",
     done: "完成",
@@ -136,6 +162,20 @@ const messages = {
     weekView: "Week",
     exportJsonl: "Export JSONL",
     exportMarkdown: "Export Markdown",
+    importJsonl: "Import JSONL",
+    syncNow: "Sync",
+    syncSettings: "Sync Settings",
+    syncEndpoint: "Sync endpoint",
+    syncEndpointPlaceholder: "https://tracker.example.com",
+    syncProfileId: "Name",
+    syncKey: "Sync code",
+    syncReady: "Sync settings saved",
+    syncMissing: "Add sync endpoint, name, and sync code in settings first",
+    syncPushing: "Syncing",
+    syncComplete: "Sync complete",
+    syncFailed: "Sync failed",
+    importComplete: "Import complete",
+    importFailed: "Import failed",
     settings: "Settings",
     layoutSettings: "Layout Settings",
     done: "Done",
@@ -290,7 +330,12 @@ const DEFAULT_SETTINGS: Settings = {
     text: "#1d1f21",
     positive: "#2bbc8a",
     accent: "#d480aa"
-  }
+  },
+  syncEndpoint: "",
+  syncProfileId: "",
+  syncKey: "",
+  syncDeviceId: "",
+  syncCursor: ""
 };
 
 let dbPromise: Promise<IDBDatabase> | undefined;
@@ -304,6 +349,7 @@ export function App() {
   const [saveState, setSaveState] = useState<string>(messages["zh-CN"].loading);
   const [error, setError] = useState<Error | null>(null);
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const locale = settings.locale;
   const t = messages[locale];
 
@@ -371,6 +417,80 @@ export function App() {
     setRecords(await getAllRecords());
   }
 
+  async function importJsonlFile(file: File | undefined) {
+    if (!file) return;
+    try {
+      const snapshot = parseJsonl(await file.text());
+      const importedRecords = snapshot.dailyRecords.map(fromDailyRecord);
+      const merged = mergeRecordData(await getAllRecords(), importedRecords);
+      await putRecords(merged);
+      const importedSettings = snapshot.settings.at(-1);
+      if (importedSettings) {
+        const nextSettings = normalizeSettings({ ...settings, ...importedSettings });
+        await persistSettings(nextSettings);
+      }
+      setRecord((await getRecord(selectedDate)) ?? await loadOrCreateRecord(selectedDate));
+      setRecords(await getAllRecords());
+      setSaveState(`${t.importComplete}: ${importedRecords.length}`);
+    } catch (caught) {
+      setSaveState(`${t.importFailed}: ${caught instanceof Error ? caught.message : String(caught)}`);
+    }
+  }
+
+  async function syncNow() {
+    const syncEndpoint = settings.syncEndpoint.trim().replace(/\/+$/, "");
+    const profileId = settings.syncProfileId.trim();
+    const syncKey = settings.syncKey.trim();
+    if (!syncEndpoint || !profileId || !syncKey) {
+      setSaveState(t.syncMissing);
+      return;
+    }
+
+    try {
+      setSaveState(t.syncPushing);
+      const deviceId = getOrCreateDeviceId(settings);
+      if (deviceId !== settings.syncDeviceId) {
+        await persistSettings({ ...settings, syncDeviceId: deviceId });
+      }
+      const localRecords = await getAllRecords();
+      const moduleDefinitions = createModuleDefinitions(settings);
+      const envelope = createSyncEnvelope({
+        profileId,
+        deviceId,
+        clientId: getSyncClientId(),
+        dailyRecords: localRecords.map(toDailyRecord),
+        moduleDefinitions
+      });
+
+      const pushResponse = syncPushResponseSchema.parse(await postJson(`${syncEndpoint}/api/sync/push`, {
+        profileId,
+        syncKey,
+        deviceId,
+        clientId: getSyncClientId(),
+        envelope
+      }));
+      if (!pushResponse.ok) throw new Error(pushResponse.error.message);
+
+      const pullResponse = syncPullResponseSchema.parse(await postJson(`${syncEndpoint}/api/sync/pull`, {
+        profileId,
+        syncKey,
+        deviceId,
+        clientId: getSyncClientId(),
+        since: settings.syncCursor || undefined
+      }));
+      if (!pullResponse.ok) throw new Error(pullResponse.error.message);
+
+      const merged = mergeRecordData(localRecords, pullResponse.envelope.dailyRecords.map(fromDailyRecord));
+      await putRecords(merged);
+      await persistSettings({ ...settings, syncDeviceId: deviceId, syncCursor: pullResponse.cursor });
+      setRecord((await getRecord(selectedDate)) ?? await loadOrCreateRecord(selectedDate));
+      setRecords(await getAllRecords());
+      setSaveState(`${t.syncComplete}: ${merged.length}`);
+    } catch (caught) {
+      setSaveState(`${t.syncFailed}: ${caught instanceof Error ? caught.message : String(caught)}`);
+    }
+  }
+
   if (error) {
     return (
       <main className="app-shell">
@@ -411,13 +531,30 @@ export function App() {
           <button className="text-button" type="button" onClick={() => setView(view === "week" ? "record" : "week")}>
             {view === "week" ? t.recordView : t.weekView}
           </button>
-          <button className="icon-button" title={t.exportJsonl} type="button" onClick={() => exportJsonl(records, selectedDate)}>
+          <button className="icon-button" title={t.exportJsonl} type="button" onClick={() => exportJsonl(records, selectedDate, settings)}>
             <Download size={17} />
             <span>JL</span>
           </button>
           <button className="icon-button" title={t.exportMarkdown} type="button" onClick={() => exportMarkdown(records, selectedDate, settings)}>
             <Download size={17} />
             <span>MD</span>
+          </button>
+          <button className="icon-button" title={t.importJsonl} type="button" onClick={() => importInputRef.current?.click()}>
+            <Upload size={17} />
+            <span>JL</span>
+          </button>
+          <input
+            ref={importInputRef}
+            className="visually-hidden"
+            type="file"
+            accept=".jsonl,application/x-ndjson,application/jsonl,text/plain"
+            onChange={(event) => {
+              importJsonlFile(event.currentTarget.files?.[0]);
+              event.currentTarget.value = "";
+            }}
+          />
+          <button className="icon-button" title={t.syncNow} type="button" onClick={syncNow}>
+            <RefreshCw size={17} />
           </button>
           <button className="icon-button" title={t.settings} type="button" onClick={openSettings}>
             <SettingsIcon size={18} />
@@ -806,6 +943,42 @@ function SettingsDialog(props: {
           </div>
         </section>
 
+        <section className="settings-section">
+          <p className="eyebrow">{t.syncSettings}</p>
+          <div className="sync-form">
+            <label>
+              <span>{t.syncEndpoint}</span>
+              <input
+                placeholder={t.syncEndpointPlaceholder}
+                type="url"
+                value={settings.syncEndpoint}
+                onChange={(event) => persistSettings({ ...settings, syncEndpoint: event.target.value.trim() })}
+              />
+            </label>
+            <label>
+              <span>{t.syncProfileId}</span>
+              <input
+                autoCapitalize="none"
+                placeholder="ari"
+                type="text"
+                value={settings.syncProfileId}
+                onChange={(event) => persistSettings({ ...settings, syncProfileId: event.target.value.trim() })}
+              />
+            </label>
+            <label>
+              <span>{t.syncKey}</span>
+              <input
+                autoCapitalize="none"
+                placeholder="12+ characters"
+                type="password"
+                value={settings.syncKey}
+                onChange={(event) => persistSettings({ ...settings, syncKey: event.target.value })}
+              />
+            </label>
+          </div>
+          <p className="save-state">{t.syncReady}</p>
+        </section>
+
         <div className="setting-list">
           {orderedModules.map((module, index) => {
             const checked = !settings.hiddenModules.includes(module.id);
@@ -990,6 +1163,17 @@ async function putRecord(record: RecordData) {
   return transactionPromise(db, RECORD_STORE, "readwrite", (store) => store.put(normalizeRecord(record)));
 }
 
+async function putRecords(records: RecordData[]) {
+  const db = await openDb();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction(RECORD_STORE, "readwrite");
+    const store = transaction.objectStore(RECORD_STORE);
+    records.forEach((record) => store.put(normalizeRecord(record)));
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
 async function getAllRecords() {
   const db = await openDb();
   const records = await transactionPromise(db, RECORD_STORE, "readonly", (store) => store.getAll());
@@ -1078,7 +1262,12 @@ function normalizeSettings(settings: unknown): Settings {
     privacyHidden: {
       poop: Boolean(merged.privacyHidden?.poop),
       weight: Boolean(merged.privacyHidden?.weight)
-    }
+    },
+    syncEndpoint: typeof merged.syncEndpoint === "string" ? merged.syncEndpoint : "",
+    syncProfileId: typeof merged.syncProfileId === "string" ? merged.syncProfileId : "",
+    syncKey: typeof merged.syncKey === "string" ? merged.syncKey : "",
+    syncDeviceId: typeof merged.syncDeviceId === "string" ? merged.syncDeviceId : "",
+    syncCursor: typeof merged.syncCursor === "string" ? merged.syncCursor : ""
   };
 }
 
@@ -1147,9 +1336,13 @@ function getRecordPrivacy(record: RecordData, moduleId: string) {
   return Boolean(record?.privacyHidden?.[moduleId]);
 }
 
-function exportJsonl(records: RecordData[], selectedDate: string) {
-  const lines = records.map((record) => JSON.stringify(toExportRecord(record)));
-  downloadFile(`luna-body-tracker-${selectedDate}.jsonl`, lines.join("\n"), "application/x-ndjson");
+function exportJsonl(records: RecordData[], selectedDate: string, settings: Settings) {
+  const content = writeJsonl({
+    moduleDefinitions: createModuleDefinitions(settings),
+    dailyRecords: records.map(toDailyRecord),
+    settings: [stripPrivateSettings(settings)]
+  });
+  downloadFile(`luna-body-tracker-${selectedDate}.jsonl`, content, "application/x-ndjson");
 }
 
 function exportMarkdown(records: RecordData[], selectedDate: string, settings: Settings) {
@@ -1209,6 +1402,163 @@ function toExportRecord(record: RecordData) {
     exported.recordedModules.push("note");
   }
   return exported;
+}
+
+function toDailyRecord(record: RecordData): DailyRecord {
+  const modules: DailyRecord["modules"] = {};
+  const recordedModuleIds: string[] = [];
+
+  if (record.mood) {
+    modules.mood = { value: record.mood };
+    recordedModuleIds.push("mood");
+  }
+  if (typeof record.waterCount === "number") {
+    modules.water = { value: record.waterCount, unit: "bowl", targetValue: 8 };
+    recordedModuleIds.push("water");
+  }
+  if (typeof record.sleepHours === "number" || getSleepSlots(record).length) {
+    modules.sleep = { value: getSleepSlots(record).length || record.sleepHours || 0, unit: "hour" };
+    recordedModuleIds.push("sleep");
+  }
+  if (record.exercise && Object.values(record.exercise).some(Boolean)) {
+    modules.exercise = Object.fromEntries(Object.entries(record.exercise).filter(([, value]) => value));
+    recordedModuleIds.push("exercise");
+  }
+  if (typeof record.weightKg === "number") {
+    modules.weight = { kg: record.weightKg };
+    recordedModuleIds.push("weight");
+  }
+  if (record.foodPool && Object.values(record.foodPool).some(Boolean)) {
+    modules.foodPool = Object.fromEntries(
+      Object.entries(record.foodPool)
+        .filter(([, amount]) => amount > 0)
+        .map(([name, amount]) => [name, { name, amount }])
+    );
+    recordedModuleIds.push("foodPool");
+  }
+  if (record.meals && Object.values(record.meals).some((value) => String(value ?? "").trim())) {
+    modules.meals = Object.fromEntries(Object.entries(record.meals).filter(([, value]) => String(value ?? "").trim()));
+    recordedModuleIds.push("meals");
+  }
+  if (typeof record.poopCount === "number") {
+    modules.poop = { count: record.poopCount, label: poopLabel(record.poopCount) };
+    recordedModuleIds.push("poop");
+  }
+  if (record.note?.trim()) {
+    modules.note = { text: record.note.trim() };
+    recordedModuleIds.push("note");
+  }
+
+  return {
+    id: `daily_${record.date}`,
+    date: record.date,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    schemaVersion: 1,
+    modules,
+    meta: {
+      recordedModuleIds,
+      source: getSyncClientId(),
+      createdAt: record.createdAt || new Date().toISOString(),
+      updatedAt: record.updatedAt || new Date().toISOString()
+    }
+  };
+}
+
+function fromDailyRecord(record: DailyRecord): RecordData {
+  const foodPoolModule = record.modules.foodPool as Record<string, { amount?: number }> | undefined;
+  const mealsModule = record.modules.meals as Record<string, string> | undefined;
+  const exerciseModule = record.modules.exercise as Record<string, boolean> | undefined;
+  const moodModule = record.modules.mood as { value?: string } | undefined;
+  const waterModule = record.modules.water as { value?: number } | undefined;
+  const sleepModule = record.modules.sleep as { value?: number } | undefined;
+  const weightModule = record.modules.weight as { kg?: number } | undefined;
+  const poopModule = record.modules.poop as { count?: number } | undefined;
+  const noteModule = record.modules.note as { text?: string } | undefined;
+
+  return normalizeRecord({
+    id: record.date,
+    date: record.date,
+    schemaVersion: APP_SCHEMA_VERSION,
+    mood: moodModule?.value,
+    waterCount: waterModule?.value,
+    sleepHours: sleepModule?.value ?? null,
+    sleepSlots: typeof sleepModule?.value === "number" ? Array.from({ length: Math.floor(sleepModule.value) }, (_, index) => index + 1) : undefined,
+    exercise: exerciseModule,
+    weightKg: weightModule?.kg ?? null,
+    foodPool: foodPoolModule ? Object.fromEntries(Object.entries(foodPoolModule).map(([key, value]) => [key, Number(value.amount ?? 0)])) : undefined,
+    meals: mealsModule,
+    poopCount: poopModule?.count,
+    note: noteModule?.text,
+    createdAt: record.meta.createdAt,
+    updatedAt: record.meta.updatedAt,
+    privacyHidden: {
+      poop: false,
+      weight: false
+    }
+  });
+}
+
+function createModuleDefinitions(settings: Settings): ModuleDefinition[] {
+  const now = new Date().toISOString();
+  const hiddenModules = new Set(settings.hiddenModules);
+  const systemDefinitions = systemModuleDefinitions.map((module) => ({
+    ...module,
+    lifecycle: hiddenModules.has(module.id as ModuleId) ? "hidden" as const : module.lifecycle
+  }));
+  const customFood = getCustomFoodItems(settings).map((item) => createCustomModule(`foodPool.${item.id}`, item.label, "intake", now));
+  const customExercise = getCustomExerciseItems(settings).map((item) => createCustomModule(`exercise.${item.id}`, item.label, "body", now));
+  return systemDefinitions.concat(customFood, customExercise);
+}
+
+function createCustomModule(id: string, title: string, category: "body" | "intake", now: string): ModuleDefinition {
+  return {
+    id,
+    title,
+    origin: "user",
+    category,
+    sensitivity: "personal",
+    lifecycle: "visible",
+    canHide: true,
+    canDelete: true,
+    schemaVersion: 1,
+    createdAt: now,
+    updatedAt: now
+  };
+}
+
+function mergeRecordData(existing: RecordData[], incoming: RecordData[]) {
+  const byDate = new Map(existing.map((record) => [record.date, record]));
+  incoming.forEach((record) => {
+    const current = byDate.get(record.date);
+    if (!current || record.updatedAt >= current.updatedAt) byDate.set(record.date, record);
+  });
+  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+async function postJson(url: string, body: unknown) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  const payload = await response.json();
+  if (!response.ok && payload?.error?.message) throw new Error(payload.error.message);
+  return payload;
+}
+
+function getSyncClientId(): "extension" | "web" {
+  return globalThis.location?.protocol === "chrome-extension:" ? "extension" : "web";
+}
+
+function getOrCreateDeviceId(settings: Settings) {
+  if (settings.syncDeviceId) return settings.syncDeviceId;
+  const random = globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+  return `${getSyncClientId()}_${random}`;
+}
+
+function stripPrivateSettings(settings: Settings) {
+  const { syncKey, ...safeSettings } = settings;
+  return safeSettings;
 }
 
 function createSummaryMarkdown(records: RecordData[], selectedDate: string, settings: Settings) {

@@ -7,6 +7,7 @@ Luna Body Tracker is a local-first body and mind record system with multiple inp
 - Chrome extension for fast daily tracking
 - PWA web app for record, review, import, visualization, and settings
 - AI skill for agent-native reading, writing, summary, and validation
+- Optional self-hosted sync server for cross-device extension/PWA sync
 - [PENDING] Future device bridge for physical tracking devices such as M5Stack
 
 The product is not only a tracker. It is a personal data protocol for recurring body and mind patterns.
@@ -24,12 +25,13 @@ Core schema
 Storage
   IndexedDB local storage
   Import/export snapshots
-  Future sync adapters
+  Self-hosted sync protocol and server
 
 Apps
   Chrome extension
   PWA web app
   AI skill
+  Sync server
 
 Harness
   Schema fixtures
@@ -79,6 +81,21 @@ temporary reveal
 
 Modules may still declare sensitivity metadata so exports, screenshots, AI summaries, and future sharing flows can handle sensitive data more carefully.
 
+## Sync Strategy
+
+The extension and PWA may run on different physical devices, so browser message passing is only a same-device convenience. Cross-device sync uses an optional self-hosted server and a versioned sync protocol.
+
+The MVP sync model is:
+
+```text
+client local storage
+  -> schema-validated sync envelope
+  -> self-hosted sync server
+  -> schema-validated pull into another client
+```
+
+Each deployment may host multiple profiles. A profile-scoped sync key isolates each person's records, module definitions, and AI context without requiring a full account system in the MVP.
+
 ## AI Skill Strategy
 
 AI agents should not read raw storage directly. They should use controlled tools:
@@ -101,6 +118,7 @@ The first repository is open source. Future commercial or private work may be sp
 Possible future private or paid areas:
 
 - Cloud sync
+- End-to-end encrypted sync
 - Advanced AI analysis
 - Device bridge
 - Private deployment dashboard

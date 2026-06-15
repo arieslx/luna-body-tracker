@@ -5,8 +5,6 @@ organization: Luna Body Tracker local knowledge draft
 versionDate: 2026-06-15
 tags: female-physiology, training, nutrition, recovery
 ---
-### Planned / Not Started
-- [ ] placeholder
 
 Women-centered recommendations should not treat male physiology as the default and then scale down. Training tolerance, recovery needs, sleep, energy availability, cycle symptoms, stress, and iron status can all affect what feels sustainable.
 
