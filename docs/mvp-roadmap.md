@@ -88,21 +88,29 @@ Exit criteria:
 
 - Add `apps/skill`
 - Add `packages/ai-skill-sdk`
-- Implement protocol-neutral skill core
-- Add initial tools:
-  - `list_modules`
-  - `read_daily_records`
-  - `write_daily_record`
-  - `validate_records`
-  - `summarize_period`
-  - `export_records`
+- Implement a protocol-neutral skill core with strict progressive disclosure.
+- Prevent fast token burn by default: the skill should expose cheap metadata, counts, ranges, and summaries first, and only read detailed records or knowledge passages when sufficient conditions are met.
+- Add module self-check so an agent can inspect available modules, schema versions, data ranges, sensitive fields, and tool limits before reading data.
+- Add controlled data-reading tools that require explicit filters such as date range, module IDs, sensitivity policy, and summary/detail mode.
+- Add fixture-data summary tools for MVP testing without requiring a user's private records.
+- Add deterministic replay support for tool calls through the harness.
+- Add a local file knowledge-base index for health, nutrition, training, menstrual-cycle, and female physiology references.
+- Track knowledge provenance for every indexed source, including title, author or organization when available, source path or URL, version/date, topic tags, and retrieval chunk IDs.
+- Start with a women-centered health knowledge base, including topics such as cortisol and stress physiology, high-hormone and low-hormone cycle phases, training and nutrition across cycle phases, and the principle that women are not simply smaller men.
+- Keep recommendations personalized but bounded: suggestions should be based on user records, declared goals, retrieved knowledge, and clear uncertainty, not generic one-size-fits-all advice.
+- Treat medical, hormonal, menstrual, nutrition, and fitness suggestions as educational support rather than diagnosis or treatment.
 
 Exit criteria:
 
 - AI agent can inspect module definitions
-- AI agent can read records through controlled APIs
-- AI agent can summarize a period using fixture data
-- Tool calls can be replayed in harness
+- AI agent can run a module and capability self-check before reading private data.
+- AI agent can read records only through controlled APIs with explicit filters and sensitivity handling.
+- AI agent can summarize a period using fixture data.
+- Tool calls can be replayed deterministically in harness.
+- Skill can answer from indexed local knowledge with source references.
+- Skill can decline or ask for narrower scope when a request would require excessive token usage.
+- Skill retrieves detailed records or knowledge chunks only after cheap metadata indicates they are relevant.
+- Nutrition and fitness suggestions can combine records with women-centered knowledge sources and cite the indexed provenance used.
 
 ## Phase 6: Harness
 

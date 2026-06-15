@@ -1,0 +1,21 @@
+{
+  "name": "@luna-body-tracker/skill",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "self-check": "tsx src/main.ts self-check",
+    "summarize-fixture": "tsx src/main.ts summarize-fixture",
+    "query-knowledge": "tsx src/main.ts query-knowledge"
+  },
+  "dependencies": {
+    "@luna-body-tracker/ai-skill-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0"
+  }
+}

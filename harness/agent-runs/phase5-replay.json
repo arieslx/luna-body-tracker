@@ -1,0 +1,21 @@
+[
+  {
+    "tool": "self_check"
+  },
+  {
+    "tool": "summarize_period",
+    "input": {
+      "dateRange": {
+        "from": "2026-06-01",
+        "to": "2026-06-30"
+      }
+    }
+  },
+  {
+    "tool": "query_knowledge_index",
+    "input": {
+      "query": "cortisol stress sleep nutrition",
+      "requireProvenance": true
+    }
+  }
+]

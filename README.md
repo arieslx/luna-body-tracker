@@ -77,3 +77,6 @@ luna-body-tracker/
 - System modules are product protocol, not disposable user data.
 - User custom modules are user-owned data and should never be hard deleted.
 - AI agents interact with data through controlled APIs, not direct storage access.
+
+### Planned / Not Started
+- [ ] app/skills/knowledge
