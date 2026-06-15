@@ -1,5 +1,5 @@
 {
-  "name": "@luna-body-tracker/extension",
+  "name": "@luna-body-tracker/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",

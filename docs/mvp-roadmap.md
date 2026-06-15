@@ -69,19 +69,20 @@ Exit criteria:
 
 ## Phase 4: PWA Web App
 
-- Add `apps/web`
-- Import JSONL
-- body record, logic the same as chrome extension.
-- Show daily records
-- Show module definitions
-- Add basic trend views
-- Add sensitive-data blur toggle
+- Add `apps/web` as a Vite + React + TypeScript PWA shell.
+- Reuse the Phase 3 React page logic from `@luna-body-tracker/ui`.
+- Keep record input, local storage, settings, i18n, responsive layout, JSONL export, Markdown export, and week view consistent with the extension.
+- Add web app manifest, mobile install metadata, app icon, and service worker so the PWA can be added to a phone home screen.
+- Keep future PWA-only import, review, and visualization work behind later scope decisions instead of duplicating extension logic now.
 
 Exit criteria:
 
-- PWA can import extension exports
-- PWA can display daily bento records
-- Sensitive fields can be blurred with one state button
+- PWA can be built with `pnpm --filter @luna-body-tracker/web build`.
+- Build output is generated in `apps/web/dist`.
+- PWA manifest and service worker are present in the production build.
+- PWA displays the same daily bento record UI as the extension.
+- PWA supports the same input, export, i18n, responsive layout, and sensitive-data blur behavior as the extension.
+- The app can be installed from a mobile browser that supports adding PWAs to the home screen.
 
 ## Phase 5: AI Skill
 

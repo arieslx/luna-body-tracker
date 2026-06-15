@@ -5,5 +5,5 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "noEmit": true
   },
-  "include": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts", "apps/*/src/**/*.tsx", "apps/*/vite.config.ts"]
+  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.tsx", "apps/*/src/**/*.ts", "apps/*/src/**/*.tsx", "apps/*/vite.config.ts"]
 }
