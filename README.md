@@ -4,6 +4,12 @@ Luna Body Tracker is a local-first, extensible body and mind tracking system for
 
 It helps people record daily body signals, mood, food, sleep, menstrual cycle, bowel movements, notes, and custom personal modules. The project starts from a Chrome extension and grows into a shared open core for a PWA web app, AI skill, and future device integrations.
 
+## Product Preview
+
+![Luna Body Tracker product screenshot](docs/pics/image.png)
+![Luna Body Tracker product screenshot1](docs/pics/image1.png)
+
+
 ## MVP Scope
 
 - Chrome extension with bento-style daily tracking
