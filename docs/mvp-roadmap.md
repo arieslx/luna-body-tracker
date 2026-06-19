@@ -160,12 +160,87 @@ Exit criteria:
 - JSONL import/export remains available even when sync is not configured or the server is offline.
 - Sync protocol behavior is covered by deterministic harness fixtures.
 
+## Phase 8: Codex Skill Product Layer
+
+- Keep the Phase 5 `ai-skill-sdk` as the controlled data-reading, progressive disclosure, provenance, and replay layer.
+- Add a Codex Skill named `luna-body-tracker` as the product-facing reasoning layer.
+- Use `Moon Body` as the desktop display name for the Skill.
+- Position the Skill as a women-centered body and mind rhythm assistant that helps users understand daily records, stress-eating patterns, cycle phases, recovery needs, and realistic life planning.
+- Define the Skill tone as warm, nonjudgmental, low-shame, recovery-first, and joy-compatible.
+- Keep medical, nutrition, mental health, menstrual, and hormonal guidance educational only; do not diagnose, prescribe, replace professional care, encourage extreme dieting, or reinforce weight anxiety.
+- Trigger the Skill for daily health-record analysis, weekly/monthly rhythm summaries, stress-eating reflection, cycle-aware planning, and structured state extraction for external agents.
+- Keep `SKILL.md` concise: include trigger intent, core workflow, tone rules, progressive disclosure rules, safety boundary reminders, and reference-file routing.
+- Add `references/data-schema.md` for Daily Log input, Body State Summary output, confidence levels, and partial natural-language input handling.
+- Add `references/cycle-phases.md` for menstrual, follicular, ovulation, luteal, and premenstrual phase observations, with food, movement, sleep, emotional care, and work/social rhythm suggestions.
+- Add `references/stress-eating.md` for stress-eating drivers such as true hunger, emotional hunger, sleep debt, luteal/premenstrual appetite increase, insufficient meals or protein, stress compensation, and restriction/rebound loops.
+- Add `references/safety-boundaries.md` for medical, nutrition, and mental-health boundaries, high-risk signals, and professional-support language.
+- Add `references/agent-actions.md` for structured outputs to schedule, food, movement, emotional-support, and summary agents.
+- Add `agents/openai.yaml` with `display_name: Moon Body`, a short description, and a default prompt for analyzing today's record and producing external-agent summaries.
+- Define the default analysis order: read cheap metadata or user-provided log, identify cycle/body state, connect sleep/nutrition/movement/digestion/mood/stress signals, check stress-eating or overfatigue patterns, then provide gentle explanation, today/tomorrow suggestions, and optional structured JSON.
+- Keep JSON output progressive: provide full Agent Action JSON only when requested or when the calling context needs external-agent handoff.
+- Add Skill test scenarios for premenstrual stress-eating urge, late-night sweet cravings after poor sleep, period fatigue with exercise guilt, weekly summaries, low mood despite adequate meals, chronic bowel irregularity, and high-risk eating-disorder signals.
+- Validate that outputs avoid shame, avoid diagnosis, explain uncertainty, give low-cost actions, preserve professional-support boundaries, and produce stable JSON when requested.
+
+Exit criteria:
+
+- `SKILL.md` and all Phase 8 reference files exist and are concise enough for progressive disclosure.
+- `agents/openai.yaml` represents the Skill accurately for desktop discovery.
+- The Skill can analyze incomplete natural-language daily logs without requiring perfect structured input.
+- The Skill can output a Body State Summary with confidence levels.
+- The Skill can provide stress-eating support using low-shame explanations and immediate stabilization steps.
+- The Skill can provide cycle-aware life suggestions without making absolute claims.
+- The Skill can produce external-agent JSON blocks on request.
+- High-risk health, eating, or mental-health signals switch the response toward safety and professional support.
+- Phase 5 controlled reading, low-token disclosure, source provenance, and harness replay remain intact.
+
+## Phase 9: StickS3 Tree Hole Tamagotchi
+
+- Add `apps/tracker-stickS3` as the M5Stack StickS3 companion app workspace.
+- Build an ultra-light, low-pressure electronic pet named Tree Hole Tamagotchi.
+- Represent the pet as a cute personified tree that supports self-care, habit formation, and emotional release.
+- Keep the core rule non-punitive: the tree never dies, never decays, has no hunger penalty, and never shames missed check-ins.
+- Target M5Stack StickS3 hardware with 135x240 ST7789P3 LCD, ESP32-S3-PICO-1-N8R8, 8MB Flash, 8MB PSRAM, BMI270 IMU, KEY1/KEY2 buttons, MEMS microphone, speaker, and UiFlow2/MicroPython support.
+- Keep layout configurable by actual display dimensions instead of assuming 320x240.
+- Use a compact vertical layout: full-screen opaque day/night background, top RTC/status bar, replaceable center sprite area, bottom text toolbar, and a small hint/status line when space allows.
+- Use existing assets from `apps/tracker-stickS3/assets`, including `day.png`, `night.png`, `sleep.png`, `water.png`, food images, mood images, and exercise images.
+- Keep the bottom toolbar text-only for MVP instead of using tool icons.
+- Use ASCII fallback labels for the bottom toolbar: `W`, `F`, `T`, `S`, and `QR`.
+- Highlight the selected toolbar label with code-drawn contrast such as a filled rectangle, border, underline, or inverted text.
+- Do not require a custom font file for MVP.
+- Maintain daily state with a dictionary such as `daily_log = {"water": 0, "food": "None", "exercise": "None", "mood": "calm", "tree_hole_text": ""}`.
+- Use `active_tool_index` values `0..4` for water, food, trim/exercise, tree spirit, and export.
+- Export compact JSON through an on-screen QR code instead of exporting a raw Python dictionary string.
+- Keep QR payloads short enough for reliable scanning; omit long `tree_hole_text` values in the MVP if needed.
+- Support day/night visual mode from RTC using opaque `day.png` and `night.png` backgrounds.
+- Treat center images such as `sleep.png`, `water.png`, food images, mood images, and exercise images as replaceable foreground sprites drawn over the current opaque background.
+- Render one replaceable center sprite at a time with memory-conscious loading instead of layering many animations.
+- Implement default two-button interaction for StickS3: one button cycles tools and the other executes the selected tool.
+- Keep IMU tilt navigation as a later optional enhancement.
+- Implement water action: increment `water` and switch the main image to `water.png`.
+- Implement food action: cycle through protein, vegetable, and staple; save the selection to `food`; switch the main image to `chicken.png`, `vegetable.png`, or `rice.png`.
+- Implement trim/exercise action: cycle through available movement options such as aerobic, anaerobic, swim, and bike, then switch the main image to the selected exercise image.
+- Implement tree spirit action: cycle mood state and switch the main image to available mood assets such as laugh, calm, cry, angry, and tired.
+- Implement export action: generate a QR code containing the current day's JSON payload.
+- Do not implement audio, STT, Wi-Fi sync, streak bonuses, falling leaves, watering frame animation, or tree-hole recording in the MVP.
+
+Exit criteria:
+
+- `apps/tracker-stickS3` exists with device requirements and MVP scope documented.
+- The StickS3 app can show an opaque day/night background, replaceable center sprite, top status bar, and ASCII bottom text toolbar on a 135x240 display.
+- Water, food, trim/exercise, tree spirit, and export actions update `daily_log` without any automatic decay or punishment.
+- Selecting water, food, trim/exercise, or tree spirit changes the visible main image according to the selected action.
+- QR export produces valid compact JSON with `source`, `date`, `water`, `food`, `exercise`, `mood`, and optional `tree_hole_text`.
+- Interaction works with KEY1/KEY2.
+- Day/night display changes based on RTC.
+- The MVP runs without audio, STT, Wi-Fi sync, custom font dependency, transparent background dependency, or animation requirements.
+
 ## Post-MVP Candidates
 
 - Manual cloud upload
 - End-to-end encrypted sync
 - Advanced AI analysis
-- M5Stack device bridge
+- StickS3 voice tree-hole STT
+- StickS3 Wi-Fi sync bridge
 - Gamified tracking
 - Plugin marketplace
 - Private deployment package

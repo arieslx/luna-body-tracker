@@ -42,6 +42,7 @@ luna-body-tracker/
     web/
     skill/
     sync-server/
+    tracker-stickS3/
 
   packages/
     schema/
