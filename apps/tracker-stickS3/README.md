@@ -50,3 +50,7 @@ MVP direction:
   a lightweight QR renderer is added.
 - Do not require audio, STT, Wi-Fi sync, custom fonts, transparent backgrounds,
   streak bonuses, or animation in the MVP.
+
+## Testing 
+
+[uiflow2-testing env](https://uiflow2.m5stack.com/)
