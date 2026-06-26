@@ -7,6 +7,7 @@ Use this checklist on the physical StickS3 after copying the Python files and
 
 Copy Python files to the app root on the device:
 
+- `boot.py`
 - `main.py`
 - `config.py`
 - `controller.py`
@@ -40,6 +41,8 @@ Copy device assets to the configured resource folder:
 - [ ] `BtnA` returns from export screen to the main screen.
 - [ ] Reboot preserves the current day's JSON record.
 - [ ] Changing the date creates a new default daily record.
+- [ ] Power cycle starts the app automatically from `/flash/boot.py`.
+- [ ] Holding `BtnB` during boot skips autostart and shows `BOOT SKIP`.
 
 ## Confirmed Device API
 
@@ -55,6 +58,12 @@ Copy device assets to the configured resource folder:
 - `BtnA`: lower middle button, used to execute the active tool.
 - `BtnB`: right button, used to switch tools.
 - Power/mode button: do not use for app interaction.
+
+## Autostart Recovery
+
+`boot.py` imports and runs `main.main()` on startup. Hold `BtnB` while the
+device is booting to skip app autostart and keep USB/WebTerminal debugging
+available.
 
 ## Expected QR Shape
 
