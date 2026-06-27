@@ -26,6 +26,8 @@ Confirmed UiFlow2 device mapping:
 - `BtnA` is the lower middle button and executes the active tool.
 - `BtnB` is the right button and switches tools.
 - The power/mode button is not used by the app.
+- `/flash/boot.py` starts the app automatically on boot.
+- Hold `BtnB` during boot to skip autostart for USB/WebTerminal debugging.
 
 Asset folders:
 
