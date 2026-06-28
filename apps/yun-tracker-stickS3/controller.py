@@ -5,27 +5,33 @@ try:
 except ImportError:
     time = None
 
-from config import ACTION_FRAME_MS, ACTION_MS, COMPLETE_MS, INTRO_PAGES
+from config import ACTION_FRAME_MS, ACTION_MS, COMPLETE_MS, FRAME_MS, INTRO_PAGES
 from ui import (
     render_action,
     render_action_frame,
     render_complete,
+    render_complete_overlay,
     render_home,
+    render_home_lan_frame,
     render_home_selection,
     render_intro,
     render_oracle_summary,
     render_platform,
+    render_platform_option_overlay,
 )
 
 
 class AppController:
-    def __init__(self, state, display, time_provider=None, night_provider=None, save_callback=None):
+    def __init__(self, state, display, time_provider=None, night_provider=None, save_callback=None, date_provider=None):
         self.state = state
         self.display = display
         self.time_provider = time_provider or ticks_ms
         self.night_provider = night_provider or (lambda: False)
         self.save_callback = save_callback
+        self.date_provider = date_provider or (lambda: "")
         self.last_frame_ms = 0
+        self.last_home_frame_ms = 0
+        self.home_frame_index = 0
         self.action_started_ms = None
         self.complete_started_ms = None
 
@@ -34,13 +40,20 @@ class AppController:
         if scene == "intro":
             render_intro(self.display, self.state.intro_index, self.night_provider())
         elif scene == "home":
-            render_home(self.display, self.state.current_entrance(), self.night_provider())
+            render_home(
+                self.display,
+                self.state.current_entrance(),
+                self.night_provider(),
+                self.home_frame_index,
+            )
         elif scene == "platform":
             render_platform(
                 self.display,
                 self.state.active_entrance,
                 self.state.frame_index,
                 self.night_provider(),
+                self.state.current_option(),
+                self.state.selected_option_keys(),
             )
         elif scene == "action":
             render_action(
@@ -50,9 +63,19 @@ class AppController:
                 self.night_provider(),
             )
         elif scene == "oracle":
-            render_oracle_summary(self.display, self.state.daily_log, self.night_provider())
+            render_oracle_summary(
+                self.display,
+                self.state.daily_log,
+                self.night_provider(),
+                self.date_provider(),
+            )
         elif scene == "complete":
-            render_complete(self.display, self.state.completed_entrance, self.night_provider())
+            render_complete(
+                self.display,
+                self.state.completed_entrance,
+                self.night_provider(),
+                self.state.completed_options,
+            )
 
     def on_next(self):
         if self.state.scene == "intro":
@@ -64,7 +87,17 @@ class AppController:
             render_home_selection(self.display, previous, self.state.current_entrance())
             return self.state.snapshot()
         elif self.state.scene == "platform":
-            self.state.cancel_to_home()
+            if self.state.current_option():
+                self.state.next_option()
+                render_platform_option_overlay(
+                    self.display,
+                    self.state.active_entrance,
+                    self.state.current_option(),
+                    self.night_provider(),
+                )
+                return self.state.snapshot()
+            else:
+                self.state.cancel_to_home()
         elif self.state.scene in ("complete", "oracle"):
             self.state.cancel_to_home()
         self.render()
@@ -80,17 +113,28 @@ class AppController:
             self.state.enter_platform()
             self.last_frame_ms = self.time_provider()
         elif scene == "platform":
-            self.state.start_action()
-            self.action_started_ms = self.time_provider()
-            self.last_frame_ms = self.action_started_ms
+            self.start_current_action()
+            return self.state.snapshot()
         elif scene in ("complete", "oracle"):
             self.state.cancel_to_home()
             self.complete_started_ms = None
         self.render()
         return self.state.snapshot()
 
+    def start_current_action(self, selected_options=()):
+        current = self.state.current_option()
+        self.state.pending_options = tuple(selected_options or ((current,) if current else ()))
+        self.state.start_action()
+        self.action_started_ms = self.time_provider()
+        self.last_frame_ms = self.action_started_ms
+
     def tick(self):
         now = self.time_provider()
+        if self.state.scene == "home":
+            if elapsed(now, self.last_home_frame_ms) >= FRAME_MS:
+                self.last_home_frame_ms = now
+                self.home_frame_index += 1
+                render_home_lan_frame(self.display, self.home_frame_index, self.night_provider())
         if self.state.scene == "action":
             if elapsed(now, self.last_frame_ms) >= ACTION_FRAME_MS:
                 self.last_frame_ms = now
@@ -99,16 +143,19 @@ class AppController:
                     self.display,
                     self.state.active_entrance,
                     self.state.frame_index,
+                    self.night_provider(),
                 )
             if self.action_started_ms is not None and elapsed(now, self.action_started_ms) >= ACTION_MS:
                 self.action_started_ms = None
-                key = self.state.complete_action()
+                key = self.state.complete_action(getattr(self.state, "pending_options", ()))
+                self.state.pending_options = ()
                 self.save()
                 if key == "oracle":
                     self.state.scene = "oracle"
+                    self.render()
                 else:
                     self.complete_started_ms = self.time_provider()
-                self.render()
+                    render_complete_overlay(self.display, key, self.night_provider())
         if self.state.scene == "complete" and self.complete_started_ms is not None:
             if elapsed(now, self.complete_started_ms) >= COMPLETE_MS:
                 self.complete_started_ms = None

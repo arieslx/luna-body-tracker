@@ -34,6 +34,77 @@ Home island
   -> return to home island
 ```
 
+## Current Implemented Gameplay
+
+The current build uses a no-bubble, top-text interaction model:
+
+```text
+Home island
+  -> BtnB moves across 8 entrance icons
+  -> Lan idles on the home island with lan_stand_0/1
+  -> BtnA enters the selected platform
+  -> top text shows the selected action or option
+  -> BtnB switches mood / food sub-options when available
+  -> BtnA starts Lan's action animation
+  -> daily_log is updated locally
+  -> completion copy appears at the top
+  -> normal actions auto-return home
+  -> oracle action opens the summary scroll
+```
+
+Implemented interaction details:
+
+- Home scene draws `day.png` / `night.png` over `day_bg.png` / `night_bg.png`.
+- Home scene includes Lan idle animation using `lan_stand_0.png` and `lan_stand_1.png`.
+- Platform entry still renders full platform scenes such as `platform_mood.png`, `platform_food.png`, and `platform_oracle.png`.
+- Platform text is rendered as compact English pixel text at the top of the screen.
+- Bubble images are not used in the current runtime UI.
+- `mood` is single-choice: `Happy`, `Sad`, `Angry`, `Calm`, `Tired`, `Emo`.
+- `food` is single-choice: `Meat`, `Egg`, `Dairy`, `Veg`, `Fruit`, `Good fat`, `Carbs`.
+- `water`, `sleep`, `stress`, `poop`, `sport`, and `oracle` are direct actions.
+- Normal completion text is rendered as a top overlay without a full scene redraw.
+- Oracle platform still uses `platform_oracle.png`; after the oracle action completes, the summary screen switches to `oracle.png`.
+- The oracle summary reads real `daily_log` counts, not hard-coded numbers.
+- Device startup uses a small `/flash/main.py` launcher:
+  - `BtnA`: start Yun Tracker.
+  - `BtnB`: restore the official UIFlow2 startup menu and reboot.
+- Yun Tracker attempts network-only startup before NTP time sync.
+- If WiFi is available, the device time is synced with NTP and converted to UTC+8 before loading today's record.
+
+Implemented rendering rules:
+
+- `home -> platform` is allowed to use a full scene render.
+- Home Lan idle uses local dirty-rectangle refresh only.
+- Platform option switching uses top-area overlay refresh only.
+- Platform action animation uses Lan dirty-rectangle refresh only.
+- Completion copy uses top-area overlay refresh only.
+- Oracle summary is a major scene switch and uses a full render.
+
+## Implemented Task Checklist
+
+- [x] Create `apps/yun-tracker-stickS3`.
+- [x] Use existing `assets-device/` resources without automatic image processing.
+- [x] Render day/night home scenes.
+- [x] Render 8 entrance icons in top and bottom rows.
+- [x] Support two-button interaction: `BtnB` next, `BtnA` confirm.
+- [x] Enter platform scenes from the home island.
+- [x] Support mood and food sub-options as single-choice records.
+- [x] Store daily records in `/flash/yun_daily.json`.
+- [x] Count nested mood and food categories in summary totals.
+- [x] Add Lan action frame animations per platform.
+- [x] Add Lan home idle animation with local refresh.
+- [x] Remove bubble UI from runtime and use top text instead.
+- [x] Add compact pixel text renderer for English text.
+- [x] Add word wrapping for long top text.
+- [x] Add local dirty-rectangle refresh for action frames.
+- [x] Add local top-area refresh for option and completion text.
+- [x] Add oracle summary scroll image using `oracle.png`.
+- [x] Document full-screen flash troubleshooting in `troubleshooting.md`.
+- [x] Add a system-friendly launcher menu at `/flash/main.py`.
+- [x] Keep the official UIFlow2 `boot.py` intact.
+- [x] Add `BtnB -> official UIFlow2 startup menu` recovery path.
+- [x] Add startup-time NTP sync attempt for the daily date key.
+
 ## Hardware Constraints
 
 - Target device: M5Stack StickS3 with UiFlow2 / MicroPython.
@@ -512,28 +583,37 @@ Exit criteria:
 
 ## Phase 8: Device Packaging
 
-- [ ] Upload MVP Python files to `/flash`.
-- [ ] Upload MVP assets to `/flash/res`.
-- [ ] Run without replacing the existing tracker autostart.
-- [ ] After manual approval, switch `/flash/boot.py` to launch this game.
-- [ ] Keep a `BtnB` boot skip recovery path.
+- [x] Upload MVP Python files to `/flash/yun_app`.
+- [x] Upload MVP assets to `/flash/yun-res`.
+- [x] Keep the official UIFlow2 `boot.py` unchanged.
+- [x] Install a lightweight launcher at `/flash/main.py`.
+- [x] Set `boot_option=0` so the launcher runs on boot.
+- [x] Add `BtnA START YUN` to start the game.
+- [x] Add `BtnB SYSTEM` to set `boot_option=1` and reboot into the official UIFlow2 startup menu.
+- [x] Add network-only startup and NTP time sync before loading the daily log.
+- [ ] Verify NTP sync after WiFi credentials are saved through the official setup flow.
 
 Exit criteria:
 
-- Game can run from USB/WebTerminal.
-- Existing tracker app is not overwritten until explicitly approved.
+- Game can run from the physical launcher without WebTerminal.
+- User can return to the official UIFlow2 Cloud / USB / Setup menu from the launcher.
+- Daily records use a real date key when WiFi and NTP are available.
 
 ## Phase 9: Physical QA
 
-- [ ] Test day background.
+- [x] Test day background.
 - [ ] Test night background.
-- [ ] Test all 8 icon selections.
-- [ ] Test all 8 platform entries.
-- [ ] Test at least one animation per platform.
-- [ ] Test daily log persistence.
+- [x] Test all 8 icon selections.
+- [x] Test all 8 platform entries.
+- [x] Test at least one animation per platform.
+- [x] Test daily log persistence.
 - [ ] Test oracle answer display.
-- [ ] Test boot skip recovery.
+- [x] Test launcher entry from boot.
+- [x] Test `BtnB` official system recovery path.
+- [x] Test WiFi credential persistence and NTP sync.
+- [x] Test on battery power without USB.
 
 Exit criteria:
 
 - The first playable Yun island game runs on the physical StickS3.
+- The user can choose between daily play and official system maintenance without reflashing.

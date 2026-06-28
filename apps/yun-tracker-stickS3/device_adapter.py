@@ -5,8 +5,18 @@ import time
 
 import M5
 
-TEXT_BG = 0xF6D7BE
-TEXT_COLOR = 0x6F4C68
+from config import (
+    CN_TEXT_BG,
+    CN_TEXT_COLOR,
+    NETWORK_CONNECT_TIMEOUT_SECONDS,
+    NTP_HOSTS,
+    PIXEL_TEXT_ADVANCE,
+    PIXEL_TEXT_BOLD,
+    PIXEL_TEXT_COLOR,
+    TIMEZONE_OFFSET_SECONDS,
+)
+
+TEXT_BG = CN_TEXT_BG
 
 PIXEL_FONT = {
     "0": ("01110", "10001", "10011", "10101", "11001", "10001", "01110"),
@@ -46,6 +56,8 @@ PIXEL_FONT = {
     "Y": ("10001", "10001", "01010", "00100", "00100", "00100", "00100"),
     "Z": ("11111", "00001", "00010", "00100", "01000", "10000", "11111"),
     "-": ("00000", "00000", "00000", "11111", "00000", "00000", "00000"),
+    "+": ("00000", "00100", "00100", "11111", "00100", "00100", "00000"),
+    "*": ("00000", "10101", "01110", "11111", "01110", "10101", "00000"),
     ":": ("00000", "00100", "00100", "00000", "00100", "00100", "00000"),
 }
 
@@ -54,6 +66,7 @@ class StickS3Display:
     def __init__(self, screen=None):
         self.screen = screen or M5.Display
         self.current_font = None
+        self.labels = []
 
     def image(self, path, x, y):
         self.screen.drawImage(path, x, y)
@@ -68,21 +81,34 @@ class StickS3Display:
         if is_ascii(text):
             self.pixel_text(str(text).upper(), x, y)
             return
-        self.set_text_font(text)
         try:
-            self.screen.setTextColor(0xFFFFFF, TEXT_BG)
-        except TypeError:
+            label = M5.Widgets.Label(
+                str(text),
+                x,
+                y,
+                1.0,
+                CN_TEXT_COLOR,
+                TEXT_BG,
+                M5.Widgets.FONTS.AlibabaPuHuiTiCN24,
+            )
+            self.labels.append(label)
+            M5.update()
+        except Exception:
+            self.set_text_font(text)
             try:
-                self.screen.setTextColor(0xFFFFFF)
+                self.screen.setTextColor(CN_TEXT_COLOR, TEXT_BG)
             except TypeError:
-                pass
-        self.screen.drawString(str(text), x, y)
+                try:
+                    self.screen.setTextColor(CN_TEXT_COLOR)
+                except TypeError:
+                    pass
+            self.screen.drawString(str(text), x, y)
 
     def pixel_text(self, text, x, y, scale=1):
         offset_x = x
         for char in text:
             if char == " ":
-                offset_x += 6 * scale
+                offset_x += PIXEL_TEXT_ADVANCE * scale
                 continue
             rows = PIXEL_FONT.get(char)
             if rows:
@@ -94,24 +120,40 @@ class StickS3Display:
                                 y + row_index * scale,
                                 scale,
                                 scale,
-                                TEXT_COLOR,
+                                PIXEL_TEXT_COLOR,
                             )
-            offset_x += 6 * scale
+                            if PIXEL_TEXT_BOLD:
+                                self.fill_rect(
+                                    offset_x + col_index * scale + scale,
+                                    y + row_index * scale,
+                                    scale,
+                                    scale,
+                                    PIXEL_TEXT_COLOR,
+                                )
+            offset_x += PIXEL_TEXT_ADVANCE * scale
 
     def set_text_font(self, text):
         target = "ascii" if is_ascii(text) else "cn"
         if target == self.current_font:
             return
         if target == "cn":
-            self.screen.setFont(self.screen.FONTS.EFontCN24)
+            self.screen.setFont(self.screen.FONTS.AlibabaPuHuiTiCN24)
         else:
             self.screen.setFont(self.screen.FONTS.ASCII7)
         self.current_font = target
 
     def clear(self):
-        # Scene renderers redraw their own full background. Filling black here
-        # causes visible black flashes and can show through text rendering.
-        pass
+        # Scene renderers redraw their own full background. Hide widget labels
+        # here so Chinese text does not persist across scene redraws.
+        for label in self.labels:
+            try:
+                label.setVisible(False)
+            except Exception:
+                pass
+        self.labels = []
+
+    def update(self):
+        M5.update()
 
     def fill_rect(self, x, y, w, h, color):
         if hasattr(self.screen, "fillRect"):
@@ -128,6 +170,55 @@ class StickS3Display:
 def begin_device():
     M5.begin()
     return StickS3Display()
+
+
+def sync_time_if_wifi():
+    try:
+        import network
+        import ntptime
+        from machine import RTC
+    except ImportError as error:
+        print("skip time sync:", error)
+        return False
+
+    try:
+        wlan = network.WLAN(network.STA_IF)
+        if not wlan.isconnected():
+            try:
+                import startup
+
+                startup.startup(2, NETWORK_CONNECT_TIMEOUT_SECONDS)
+            except Exception as error:
+                print("network setup skipped:", error)
+        if not wlan.active() or not wlan.isconnected():
+            print("skip time sync: wifi offline")
+            return False
+    except Exception as error:
+        print("skip time sync:", error)
+        return False
+
+    for host in NTP_HOSTS:
+        try:
+            ntptime.host = host
+            ntptime.settime()
+            local_time = time.localtime(time.time() + TIMEZONE_OFFSET_SECONDS)
+            RTC().datetime(
+                (
+                    local_time[0],
+                    local_time[1],
+                    local_time[2],
+                    local_time[6],
+                    local_time[3],
+                    local_time[4],
+                    local_time[5],
+                    0,
+                )
+            )
+            print("time synced:", current_date_text())
+            return True
+        except Exception as error:
+            print("time sync failed:", host, error)
+    return False
 
 
 def current_date_text():

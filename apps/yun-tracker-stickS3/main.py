@@ -27,6 +27,7 @@ def desktop_main():
         time_provider=fake_ticks,
         night_provider=lambda: False,
         save_callback=lambda daily_log: save_daily_log(today, daily_log),
+        date_provider=lambda: today,
     )
     controller.render()
     controller.on_next()
@@ -36,8 +37,9 @@ def desktop_main():
 
 
 def device_main():
-    from device_adapter import begin_device, current_date_text, is_night_time, run_button_loop
+    from device_adapter import begin_device, current_date_text, is_night_time, run_button_loop, sync_time_if_wifi
 
+    sync_time_if_wifi()
     today = current_date_text()
     state = AppState(load_today(today))
     display = begin_device()
@@ -46,6 +48,7 @@ def device_main():
         display,
         night_provider=is_night_time,
         save_callback=lambda daily_log: save_daily_log(current_date_text(), daily_log),
+        date_provider=current_date_text,
     )
     print({"app": APP_NAME, "scene": state.scene, "active": state.active_entrance})
     run_button_loop(controller)

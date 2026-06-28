@@ -1,14 +1,20 @@
 """State machine for Yun Tracker StickS3."""
 
-from config import ENTRANCES
+from config import ENTRANCES, option_keys
 
 
 def create_daily_log():
     log = {}
     for key in ENTRANCES:
-        log[key] = 0
+        options = option_keys(key)
+        if options:
+            log[key] = {}
+            for option in options:
+                log[key][option] = 0
+        else:
+            log[key] = 0
     log["island_energy"] = 0
-    log["seen_intro"] = False
+    log["seen_intro"] = True
     return log
 
 
@@ -16,12 +22,22 @@ def normalize_daily_log(value):
     raw = value if isinstance(value, dict) else {}
     log = create_daily_log()
     for key in ENTRANCES:
-        if isinstance(raw.get(key), int) and raw.get(key) >= 0:
-            log[key] = raw.get(key)
+        options = option_keys(key)
+        raw_value = raw.get(key)
+        if options:
+            if isinstance(raw_value, dict):
+                for option in options:
+                    count = raw_value.get(option)
+                    if isinstance(count, int) and count >= 0:
+                        log[key][option] = count
+            elif isinstance(raw_value, int) and raw_value >= 0:
+                log[key]["legacy"] = raw_value
+        elif isinstance(raw_value, int) and raw_value >= 0:
+            log[key] = raw_value
     energy = raw.get("island_energy")
     if isinstance(energy, int) and energy >= 0:
         log["island_energy"] = min(100, energy)
-    log["seen_intro"] = bool(raw.get("seen_intro"))
+    log["seen_intro"] = True
     return log
 
 
@@ -35,6 +51,9 @@ class AppState:
         self.frame_index = 0
         self.status = "READY"
         self.completed_entrance = None
+        self.completed_options = ()
+        self.pending_options = ()
+        self.option_index = 0
 
     def current_entrance(self):
         return ENTRANCES[self.selected_index]
@@ -49,19 +68,49 @@ class AppState:
         self.active_entrance = self.current_entrance()
         self.scene = "platform"
         self.frame_index = 0
+        self.option_index = 0
         self.status = self.active_entrance
         return self.active_entrance
 
     def cancel_to_home(self):
         self.scene = "home"
         self.completed_entrance = None
+        self.completed_options = ()
         self.status = "READY"
 
-    def complete_action(self):
+    def current_option(self):
+        options = option_keys(self.active_entrance)
+        if not options:
+            return None
+        return options[self.option_index % len(options)]
+
+    def next_option(self):
+        options = option_keys(self.active_entrance)
+        if not options:
+            return None
+        self.option_index = (self.option_index + 1) % len(options)
+        return self.current_option()
+
+    def selected_option_keys(self):
+        return ()
+
+    def complete_action(self, options=None):
         key = self.active_entrance
-        self.daily_log[key] = int(self.daily_log.get(key, 0)) + 1
+        completed_options = tuple(options or ())
+        option_list = option_keys(key)
+        if option_list:
+            if not completed_options:
+                current = self.current_option()
+                completed_options = (current,) if current else ()
+            if not isinstance(self.daily_log.get(key), dict):
+                self.daily_log[key] = {}
+            for option in completed_options:
+                self.daily_log[key][option] = int(self.daily_log[key].get(option, 0)) + 1
+        else:
+            self.daily_log[key] = int(self.daily_log.get(key, 0)) + 1
         self.daily_log["island_energy"] = min(100, int(self.daily_log.get("island_energy", 0)) + 10)
         self.completed_entrance = key
+        self.completed_options = completed_options
         self.scene = "complete"
         self.status = "DONE {}".format(key)
         return key

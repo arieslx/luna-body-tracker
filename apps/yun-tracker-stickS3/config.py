@@ -10,6 +10,10 @@ DISPLAY_HEIGHT = 240
 ASSET_DIR = "/flash/yun-res"
 DATA_PATH = "/flash/yun_daily.json"
 
+TIMEZONE_OFFSET_SECONDS = 8 * 60 * 60
+NTP_HOSTS = ("ntp.aliyun.com", "pool.ntp.org")
+NETWORK_CONNECT_TIMEOUT_SECONDS = 10
+
 BACKGROUND_DAY = "day.png"
 BACKGROUND_NIGHT = "night.png"
 BACKGROUND_DAY_SOFT = "day_bg.png"
@@ -51,9 +55,11 @@ PLATFORMS = {
     "oracle": "platform_oracle.png",
 }
 
+ORACLE_SUMMARY_IMAGE = "oracle.png"
+
 LAN_FRAMES = {
     "mood": ("lan_mood_0.png", "lan_mood_1.png", "lan_mood_2.png"),
-    "stress": ("lan_mood_0.png", "lan_mood_1.png", "lan_mood_2.png"),
+    "stress": ("lan_walk_0.png", "lan_walk_1.png"),
     "poop": ("lan_poop_0.png", "lan_poop_1.png", "lan_poop_2.png"),
     "food": ("lan_food_0.png", "lan_food_1.png"),
     "water": ("lan_water_0.png", "lan_water_1.png"),
@@ -61,6 +67,8 @@ LAN_FRAMES = {
     "sport": ("lan_sport_0.png", "lan_sport_1.png", "lan_sport_2.png"),
     "oracle": ("lan_oracle_0.png", "lan_oracle_1.png", "lan_oracle_2.png"),
 }
+
+HOME_LAN_FRAMES = ("lan_stand_0.png", "lan_stand_1.png")
 
 BUBBLES = {
     "mood": "bubble_left.png",
@@ -74,33 +82,85 @@ BUBBLES = {
 }
 
 BUBBLE_TEXT = {
-    "mood": ("SUN", ""),
-    "stress": ("BREATHE", ""),
-    "poop": ("SOIL", ""),
-    "food": ("CAKE", ""),
-    "water": ("DEW", ""),
-    "sleep": ("SLEEP", ""),
-    "sport": ("LEAF", ""),
-    "oracle": ("ASK", ""),
+    "mood": {
+        "happy": ("Happy", ""),
+        "sad": ("Sad", ""),
+        "angry": ("Angry", ""),
+        "calm": ("Calm", ""),
+        "tired": ("Tired", ""),
+        "emo": ("Emo", ""),
+    },
+    "stress": ("Take it easy", ""),
+    "poop": ("Take a poop", ""),
+    "food": {
+        "meat": ("Meat", ""),
+        "egg": ("Egg", ""),
+        "dairy": ("Dairy", ""),
+        "vegetables": ("Veg", ""),
+        "fruit": ("Fruit", ""),
+        "good_fat": ("Good fat", ""),
+        "carbs": ("Carbs", ""),
+    },
+    "water": ("Drink the morning dew", ""),
+    "sleep": ("Time for a nap", ""),
+    "sport": ("Stretch a bit", ""),
+    "oracle": ("Make a wish", ""),
 }
 
 COMPLETION_COPY = {
-    "mood": ("Lan got sun", "Mood returns"),
-    "stress": ("A breath loosened", "No fight today"),
-    "poop": ("Field is loose", "Body feels light"),
-    "food": ("Cake is eaten", "You cared for self"),
-    "water": ("Dew is drunk", "Fate feels softer"),
-    "sleep": ("Lan rests above", "Big things can wait"),
-    "sport": ("Fate leaf trimmed", "Your body moved"),
-    "oracle": ("Oracle says", "Today is okay"),
+    "mood": ("Soaked in the sun", "Your mood is lifting"),
+    "stress": ("Took it easy", "No battles to fight today"),
+    "poop": ("Took a poop", "Your body feels light"),
+    "food": ("Nourished", "You looked after yourself"),
+    "water": ("Sipped the dew", "Fate feels a little softer"),
+    "sleep": ("Had a nice nap", "The big things can wait"),
+    "sport": ("Stretched a bit", "You got your body moving"),
+    "oracle": ("Made a wish", "Today will be okay"),
+}
+
+BUBBLE_CN_TEXT = {
+    "mood": {
+        "happy": ("高兴呀", ""),
+        "sad": ("丧一下", ""),
+        "angry": ("超生气", ""),
+        "calm": ("无事小神仙", ""),
+        "tired": ("困了", ""),
+        "emo": ("emo咯", ""),
+    },
+    "stress": ("松口气", ""),
+    "poop": ("田里施肥", ""),
+    "food": {
+        "meat": ("肉", ""),
+        "egg": ("蛋", ""),
+        "dairy": ("奶", ""),
+        "vegetables": ("菜", ""),
+        "fruit": ("果", ""),
+        "good_fat": ("油", ""),
+        "carbs": ("饭", ""),
+    },
+    "water": ("饮朝露", ""),
+    "sleep": ("睡觉觉", ""),
+    "sport": ("修命薄", ""),
+    "oracle": ("祈天", ""),
+}
+
+COMPLETION_CN_COPY = {
+    "mood": ("兰晒到太阳", "心又归位"),
+    "stress": ("一口气松了", "今日不斗法"),
+    "poop": ("田里通了", "身轻如燕"),
+    "food": ("饭已下肚", "也算修行"),
+    "water": ("露水下腹", "水水润润"),
+    "sleep": ("兰上云睡", "大事且慢"),
+    "sport": ("命叶已修", "筋骨动了"),
+    "oracle": ("签曰", "今日无妨"),
 }
 
 INTRO_PAGES = (
-    ("你来啦", "这里是", "安得台"),
-    ("屏幕里的兰", "便是", "今日的你"),
+    ("你来啦", "此处便是", "安得台"),
+    ("屏中这株兰", "不才", "正是今日的你"),
     ("吃饭喝水", "松口气", "睡一觉"),
-    ("这些小事", "顺手记下", "便好"),
-    ("兰会替你", "慢慢过完", "这一日"),
+    ("小事记下", "大道不急", "顺手便好"),
+    ("兰替你", "慢慢过完", "这一日"),
 )
 
 ORACLE_LINES = (
@@ -123,16 +183,17 @@ ICON_POSITIONS = {
 }
 
 LAN_POSITION = {
-    "mood": (23, 74),
-    "stress": (23, 74),
+    "mood": (37, 83),
+    "stress": (38, 90),
     "poop": (45, 128),
     "food": (46, 126),
     "water": (45, 126),
-    "sleep": (42, 130),
+    "sleep": (62, 90),
     "sport": (52, 124),
-    "oracle": (48, 126),
+    "oracle": (42, 126),
 }
 
+HOME_LAN_POSITION = (50, 90)
 LAN_DIRTY_SIZE = 48
 
 BUBBLE_POSITION = {
@@ -141,13 +202,32 @@ BUBBLE_POSITION = {
 }
 
 COMPLETE_MS = 1800
-FRAME_MS = 650
-ACTION_MS = 1500
-ACTION_FRAME_MS = 500
+FRAME_MS = 1400
+ACTION_MS = 2400
+ACTION_FRAME_MS = 850
 
 HOME_SLOT_BG = 0xF6D7BE
 HOME_SLOT_HIGHLIGHT = 0xFFF1C7
+OPTION_SELECTED_MARK = "* "
+PIXEL_TEXT_COLOR = 0x4F3F4A
+PIXEL_TEXT_BOLD = True
+PIXEL_TEXT_ADVANCE = 8
+BUBBLE_LABEL_BG = 0xFFFBE5
+CN_TEXT_COLOR = 0x4F3F4A
+CN_TEXT_BG = 0xFFFBE5
+TOP_TEXT_Y = 4
+TOP_TEXT_LINE_HEIGHT = 24
+TOP_TEXT_CLEAR_HEIGHT = 82
+COMPLETION_TEXT_CLEAR_HEIGHT = 106
+TOP_TEXT_MAX_WIDTH = 128
 
 
 def asset_path(filename):
     return "{}/{}".format(ASSET_DIR.rstrip("/"), filename)
+
+
+def option_keys(entrance):
+    value = BUBBLE_TEXT.get(entrance)
+    if isinstance(value, dict):
+        return tuple(value.keys())
+    return ()
