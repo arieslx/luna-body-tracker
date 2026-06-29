@@ -2,8 +2,9 @@
 
 Install this file as /flash/main.py.
 
-BtnA starts Yun Tracker. BtnB restores the official UIFlow2 startup menu and
-soft reboots, leaving the device available for USB, Cloud, setup, and debugging.
+BtnA starts Yun Tracker. BtnB temporarily enters the official UIFlow2 system
+without changing the default boot target. After power cycling, the device still
+returns to this menu.
 """
 
 import time
@@ -35,12 +36,14 @@ def start_yun():
 
 def start_system():
     import esp32
-    import machine
+    import startup
+    from m5sync import sync
 
     nvs = esp32.NVS("uiflow")
-    nvs.set_u8("boot_option", 1)
+    nvs.set_u8("boot_option", 0)
     nvs.commit()
-    machine.reset()
+    startup.startup(1, 60)
+    sync.run()
 
 
 def main():
@@ -56,7 +59,7 @@ def main():
             print("launcher: system")
             M5.Display.fillScreen(0xFFFBE5)
             M5.Display.drawString("OPEN SYSTEM", 18, 96)
-            M5.Display.drawString("REBOOTING", 18, 124)
+            M5.Display.drawString("TEMP MODE", 18, 124)
             start_system()
             return
         time.sleep_ms(80)

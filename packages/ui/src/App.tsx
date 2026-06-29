@@ -1342,7 +1342,7 @@ function exportJsonl(records: RecordData[], selectedDate: string, settings: Sett
     dailyRecords: records.map(toDailyRecord),
     settings: [stripPrivateSettings(settings)]
   });
-  downloadFile(`luna-body-tracker-${selectedDate}.jsonl`, content, "application/x-ndjson");
+  downloadFile(`luna-body-tracker-${selectedDate}.jsonl`, content, "text/plain;charset=utf-8");
 }
 
 function exportMarkdown(records: RecordData[], selectedDate: string, settings: Settings) {

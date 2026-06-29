@@ -1,31 +1,84 @@
 # Yun Tracker StickS3 Troubleshooting
 
-## Launcher and official UIFlow2 system
+## Yun boot menu and temporary UIFlow2 system
 
-### Current boot layout
+### Recommended daily boot layout
 
 The device keeps the official UIFlow2 `/flash/boot.py` intact.
 
-Yun Tracker installs a small launcher as `/flash/main.py` and uses UIFlow2 NVS:
+For a standalone product-like experience, prefer the Yun launcher as the default
+boot target:
 
 ```text
 boot_option = 0
 ```
 
-This means the official boot file runs `main.py` directly, and the user sees:
+This makes the official boot file run `/flash/main.py` directly, and the user
+sees:
 
 ```text
 A START YUN
 B SYSTEM
 ```
 
+`B SYSTEM` should be temporary. It opens the official UIFlow2 system for Cloud,
+USB, Setup, WiFi configuration, and WebTerminal, but it must not persistently
+change the next boot. After power cycling, the device should return to the Yun
+menu again.
+
+Implementation rule:
+
+- Keep `boot_option = 0` committed in NVS.
+- For `B SYSTEM`, call UIFlow2 startup/sync directly instead of setting
+  `boot_option = 1` and rebooting.
+
+### Optional UIFlow2 Yun Launcher project
+
+If the device is already in the official UIFlow2 system, a tiny Python launcher
+can still start Yun manually. Create a small UIFlow2 Python project with the
+contents of:
+
+```text
+apps/yun-tracker-stickS3/launchers/uiflow_yun_launcher.py
+```
+
+Equivalent WebTerminal snippet for one-off launch:
+
+```python
+import gc
+import sys
+
+YUN_APP_DIR = "/flash/yun_app"
+YUN_MODULES = (
+    "main",
+    "config",
+    "config_text_en",
+    "config_text_zh",
+    "controller",
+    "device_adapter",
+    "state",
+    "storage",
+    "ui",
+)
+
+if YUN_APP_DIR not in sys.path:
+    sys.path.insert(0, YUN_APP_DIR)
+for name in YUN_MODULES:
+    sys.modules.pop(name, None)
+gc.collect()
+
+import main
+main.main()
+```
+
 ### Button behavior
 
 - `BtnA`: imports `/flash/yun_app/main.py` and starts Yun Tracker.
-- `BtnB`: sets `boot_option = 1`, commits it to NVS, and soft reboots.
+- `BtnB`: keeps `boot_option = 0`, calls `startup.startup(1, 60)`, then
+  `sync.run()`.
 
-`boot_option = 1` returns to the official UIFlow2 startup menu, where the user
-can use Cloud, USB, Setup, and WebTerminal again.
+This opens the official UIFlow2 system, where the user can use Cloud, USB,
+Setup, and WebTerminal. The next power-on still returns to the Yun menu.
 
 ### Expected serial logs
 
@@ -49,14 +102,13 @@ Return to official system:
 launcher: system
 ```
 
-After reboot, the device should show the official UIFlow2 menu instead of the
-Yun launcher.
+After power cycling, the device should show the Yun launcher again.
 
 ### Recovery notes
 
-If the user returns to the official system with `BtnB`, the next boot may stay
-in the official UIFlow2 startup menu because `boot_option` has been changed to
-`1`.
+If the device keeps booting into the official UIFlow2 startup menu,
+`boot_option` was probably changed to `1` by UIFlow Download or by an older
+launcher.
 
 To restore the Yun launcher as the default boot target, set:
 
@@ -64,6 +116,17 @@ To restore the Yun launcher as the default boot target, set:
 import esp32
 nvs = esp32.NVS("uiflow")
 nvs.set_u8("boot_option", 0)
+nvs.commit()
+```
+
+Then reboot.
+
+To make the official UIFlow2 startup menu the default again, set:
+
+```python
+import esp32
+nvs = esp32.NVS("uiflow")
+nvs.set_u8("boot_option", 1)
 nvs.commit()
 ```
 
@@ -143,6 +206,92 @@ No-code checks:
 - Check whether the device is unusually hot.
 - Stop using the device if there is strong clicking, burning smell, swelling,
   repeated rebooting, or abnormal heat.
+
+## Scene-internal flicker and occasional black screen
+
+### Symptoms
+
+- Pressing `BtnA` to enter Yun or a platform sometimes shows a black screen until reboot.
+- Text changes inside a platform can still flicker.
+- Character animation inside a platform can still flicker.
+- The issue is intermittent: rebooting may make the same build work normally again.
+
+### Current rendering path
+
+The app currently has three levels of rendering:
+
+- Major scene render:
+  - Draw soft background.
+  - Draw scene/platform PNG.
+  - Draw icons, Lan, or text.
+  - Call `update()`.
+
+- Local text overlay:
+  - Restore the top text area from background/platform crops.
+  - Draw wrapped text.
+  - Call `update()`.
+
+- Local Lan animation:
+  - Restore Lan's dirty rectangle from the platform/home image.
+  - Draw the next Lan frame.
+  - Call `update()`.
+
+When `USE_CANVAS_BUFFER = True`, `StickS3Display` tries to create one full-screen
+canvas and draw into it. `update()` then pushes the whole canvas to the display.
+This can reduce tearing, but it may also increase RAM pressure and make every
+small local animation frame more expensive than expected.
+
+### Likely causes
+
+- Full-screen canvas allocation plus PNG decoding may create memory pressure or fragmentation.
+- WiFi/NTP startup may fragment memory before display canvas allocation or PNG drawing.
+- Pushing a full-screen canvas for every local Lan frame may be too heavy for smooth animation.
+- A failed canvas, PNG decode, or push operation can leave the display blank or partially blank.
+- Larger platform images are more likely to expose the issue. Check `platform_poop.png`,
+  `platform_food.png`, `platform_oracle.png`, and `platform_sport.png` first.
+
+### What to check next
+
+- Watch serial logs for:
+
+```text
+canvas enabled
+canvas disabled
+launcher: start yun
+```
+
+- Note which exact screen triggers the black screen:
+  - launcher -> Yun
+  - home -> platform
+  - platform -> action
+  - action -> completion
+  - oracle platform -> summary
+
+- Compare two runs:
+  - WiFi/NTP startup enabled.
+  - WiFi/NTP startup skipped.
+
+- Add temporary memory probes around:
+  - `begin_device()`
+  - full-screen canvas creation
+  - platform image drawing
+  - action frame drawing
+  - completion text drawing
+
+Suggested temporary probe:
+
+```python
+import gc
+print("mem", label, gc.mem_free(), gc.mem_alloc())
+```
+
+### Next fix direction
+
+- Keep full-screen rendering for major scene transitions only.
+- Use a small top-text buffer or dirty rectangle for option and completion text.
+- Use a small Lan buffer or dirty rectangle for character frames.
+- Avoid pushing the full-screen canvas during every local animation frame.
+- Keep `gc.collect()` before memory-heavy transitions if physical testing proves it helps.
 
 ## Full-screen flash during animation
 

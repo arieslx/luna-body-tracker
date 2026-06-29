@@ -5,7 +5,12 @@ try:
 except ImportError:
     time = None
 
-from config import ACTION_FRAME_MS, ACTION_MS, COMPLETE_MS, FRAME_MS, INTRO_PAGES
+try:
+    import random
+except ImportError:
+    random = None
+
+from config import ACTION_FRAME_MS, ACTION_MS, COMPLETE_MS, FRAME_MS, INTRO_PAGES, RANDOM_ORACLE_ENTRANCE, RANDOM_ORACLE_LINES
 from ui import (
     render_action,
     render_action_frame,
@@ -15,6 +20,7 @@ from ui import (
     render_home_lan_frame,
     render_home_selection,
     render_intro,
+    render_random_oracle,
     render_oracle_summary,
     render_platform,
     render_platform_option_overlay,
@@ -45,6 +51,12 @@ class AppController:
                 self.state.current_entrance(),
                 self.night_provider(),
                 self.home_frame_index,
+            )
+        elif scene == "random_oracle":
+            render_random_oracle(
+                self.display,
+                self.state.random_oracle_line,
+                self.night_provider(),
             )
         elif scene == "platform":
             render_platform(
@@ -84,7 +96,13 @@ class AppController:
         elif self.state.scene == "home":
             previous = self.state.current_entrance()
             self.state.next_entrance()
-            render_home_selection(self.display, previous, self.state.current_entrance())
+            render_home_selection(
+                self.display,
+                previous,
+                self.state.current_entrance(),
+                self.home_frame_index,
+                self.night_provider(),
+            )
             return self.state.snapshot()
         elif self.state.scene == "platform":
             if self.state.current_option():
@@ -98,7 +116,7 @@ class AppController:
                 return self.state.snapshot()
             else:
                 self.state.cancel_to_home()
-        elif self.state.scene in ("complete", "oracle"):
+        elif self.state.scene in ("complete", "oracle", "random_oracle"):
             self.state.cancel_to_home()
         self.render()
         return self.state.snapshot()
@@ -110,12 +128,15 @@ class AppController:
                 self.state.finish_intro()
                 self.save()
         elif scene == "home":
-            self.state.enter_platform()
-            self.last_frame_ms = self.time_provider()
+            if self.state.current_entrance() == RANDOM_ORACLE_ENTRANCE:
+                self.state.open_random_oracle(pick_random_oracle_line())
+            else:
+                self.state.enter_platform()
+                self.last_frame_ms = self.time_provider()
         elif scene == "platform":
             self.start_current_action()
             return self.state.snapshot()
-        elif scene in ("complete", "oracle"):
+        elif scene in ("complete", "oracle", "random_oracle"):
             self.state.cancel_to_home()
             self.complete_started_ms = None
         self.render()
@@ -134,7 +155,12 @@ class AppController:
             if elapsed(now, self.last_home_frame_ms) >= FRAME_MS:
                 self.last_home_frame_ms = now
                 self.home_frame_index += 1
-                render_home_lan_frame(self.display, self.home_frame_index, self.night_provider())
+                render_home_lan_frame(
+                    self.display,
+                    self.home_frame_index,
+                    self.night_provider(),
+                    self.state.current_entrance(),
+                )
         if self.state.scene == "action":
             if elapsed(now, self.last_frame_ms) >= ACTION_FRAME_MS:
                 self.last_frame_ms = now
@@ -173,6 +199,15 @@ def ticks_ms():
     if time:
         return int(time.time() * 1000)
     return 0
+
+
+def pick_random_oracle_line():
+    if not RANDOM_ORACLE_LINES:
+        return ""
+    if random and hasattr(random, "choice"):
+        return random.choice(RANDOM_ORACLE_LINES)
+    index = ticks_ms() % len(RANDOM_ORACLE_LINES)
+    return RANDOM_ORACLE_LINES[index]
 
 
 def elapsed(now, then):

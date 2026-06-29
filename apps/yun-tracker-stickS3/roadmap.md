@@ -65,9 +65,11 @@ Implemented interaction details:
 - Normal completion text is rendered as a top overlay without a full scene redraw.
 - Oracle platform still uses `platform_oracle.png`; after the oracle action completes, the summary screen switches to `oracle.png`.
 - The oracle summary reads real `daily_log` counts, not hard-coded numbers.
-- Device startup uses a small `/flash/main.py` launcher:
+- Recommended device startup uses the custom Yun A/B menu.
+- Yun Tracker can still be started manually through a tiny UIFlow2 Python launcher project when needed.
+- A/B startup launcher behavior:
   - `BtnA`: start Yun Tracker.
-  - `BtnB`: restore the official UIFlow2 startup menu and reboot.
+  - `BtnB`: temporarily enter the official UIFlow2 system without changing the next boot.
 - Yun Tracker attempts network-only startup before NTP time sync.
 - If WiFi is available, the device time is synced with NTP and converted to UTC+8 before loading today's record.
 
@@ -101,8 +103,9 @@ Implemented rendering rules:
 - [x] Add oracle summary scroll image using `oracle.png`.
 - [x] Document full-screen flash troubleshooting in `troubleshooting.md`.
 - [x] Add a system-friendly launcher menu at `/flash/main.py`.
+- [x] Add a tiny UIFlow2 Python launcher project for manual start from the official system.
 - [x] Keep the official UIFlow2 `boot.py` intact.
-- [x] Add `BtnB -> official UIFlow2 startup menu` recovery path.
+- [x] Add `BtnB -> temporary official UIFlow2 system` recovery path.
 - [x] Add startup-time NTP sync attempt for the daily date key.
 
 ## Hardware Constraints
@@ -586,17 +589,19 @@ Exit criteria:
 - [x] Upload MVP Python files to `/flash/yun_app`.
 - [x] Upload MVP assets to `/flash/yun-res`.
 - [x] Keep the official UIFlow2 `boot.py` unchanged.
-- [x] Install a lightweight launcher at `/flash/main.py`.
-- [x] Set `boot_option=0` so the launcher runs on boot.
-- [x] Add `BtnA START YUN` to start the game.
-- [x] Add `BtnB SYSTEM` to set `boot_option=1` and reboot into the official UIFlow2 startup menu.
+- [x] Add `launchers/uiflow_yun_launcher.py` for manual start from the official UIFlow2 system.
+- [x] Keep lightweight A/B launcher at `/flash/main.py`.
+- [x] Use `boot_option=0` as the default product boot mode.
+- [x] Add `BtnA START YUN` to the A/B launcher.
+- [x] Add `BtnB SYSTEM` to the A/B launcher; it temporarily enters the official UIFlow2 system without persisting `boot_option=1`.
 - [x] Add network-only startup and NTP time sync before loading the daily log.
 - [ ] Verify NTP sync after WiFi credentials are saved through the official setup flow.
 
 Exit criteria:
 
-- Game can run from the physical launcher without WebTerminal.
-- User can return to the official UIFlow2 Cloud / USB / Setup menu from the launcher.
+- Game can run from the physical A/B launcher without WebTerminal.
+- User can temporarily enter the official UIFlow2 Cloud / USB / Setup system from the launcher.
+- Power cycling returns to the custom Yun A/B launcher.
 - Daily records use a real date key when WiFi and NTP are available.
 
 ## Phase 9: Physical QA
@@ -612,8 +617,29 @@ Exit criteria:
 - [x] Test `BtnB` official system recovery path.
 - [x] Test WiFi credential persistence and NTP sync.
 - [x] Test on battery power without USB.
+- [ ] Investigate occasional black screen when pressing `BtnA` to enter Yun or a platform.
+- [ ] Verify whether serial logs show `canvas enabled` or `canvas disabled` during the black-screen case.
+- [ ] Add temporary memory diagnostics around device begin, canvas creation, platform entry, PNG drawing, and action completion.
+- [ ] Compare behavior with WiFi/NTP startup enabled vs skipped to check memory fragmentation risk.
+- [ ] Profile larger platform images first, especially `platform_poop.png`, `platform_food.png`, `platform_oracle.png`, and `platform_sport.png`.
+- [ ] Consider replacing full-screen canvas pushes during local animation with smaller dirty canvases for top text and Lan frames.
 
 Exit criteria:
 
 - The first playable Yun island game runs on the physical StickS3.
 - The user can choose between daily play and official system maintenance without reflashing.
+
+## Phase 10: Performance Hardening
+
+- [ ] Keep full scene rendering only for major transitions such as home, platform entry, oracle summary, and return home.
+- [ ] Use a small top-text buffer or dirty rectangle for option text and completion text.
+- [ ] Use a small Lan buffer or dirty rectangle for character animation frames.
+- [ ] Avoid pushing a full-screen canvas for every local animation frame.
+- [ ] Keep local refresh visually stable when switching `mood`, `food`, and random oracle text.
+- [ ] Document the final rendering strategy after physical verification.
+
+Exit criteria:
+
+- Platform text updates do not visibly flicker.
+- Lan animation feels closer to a slow Tamagotchi idle/action loop.
+- Pressing `BtnA` does not occasionally enter a persistent black screen.

@@ -4,8 +4,12 @@ Keep this module hardware-free so it can be imported by desktop Python and
 UiFlow2 MicroPython.
 """
 
+from config_text_en import BUBBLE_TEXT, COMPLETION_COPY, ORACLE_LINES, RANDOM_ORACLE_LINES
+from config_text_zh import BUBBLE_CN_TEXT, COMPLETION_CN_COPY, INTRO_PAGES
+
 DISPLAY_WIDTH = 135
 DISPLAY_HEIGHT = 240
+USE_CANVAS_BUFFER = True
 
 ASSET_DIR = "/flash/yun-res"
 DATA_PATH = "/flash/yun_daily.json"
@@ -28,7 +32,11 @@ ENTRANCES = (
     "sleep",
     "sport",
     "oracle",
+    "oracle_lan",
 )
+
+NON_RECORD_ENTRANCES = ("oracle_lan",)
+RANDOM_ORACLE_ENTRANCE = "oracle_lan"
 
 TOP_ENTRANCES = ("mood", "stress", "poop", "food")
 BOTTOM_ENTRANCES = ("water", "sleep", "sport", "oracle")
@@ -42,6 +50,7 @@ ICONS = {
     "sleep": "icon_sleep.png",
     "sport": "icon_sport.png",
     "oracle": "icon_oracle.png",
+    "oracle_lan": "lan_oracle_2.png",
 }
 
 PLATFORMS = {
@@ -56,6 +65,7 @@ PLATFORMS = {
 }
 
 ORACLE_SUMMARY_IMAGE = "oracle.png"
+ORACLE_STAND_IMAGE = "oracle_stand_lan.png"
 
 LAN_FRAMES = {
     "mood": ("lan_mood_0.png", "lan_mood_1.png", "lan_mood_2.png"),
@@ -81,96 +91,6 @@ BUBBLES = {
     "oracle": "bubble_right.png",
 }
 
-BUBBLE_TEXT = {
-    "mood": {
-        "happy": ("Happy", ""),
-        "sad": ("Sad", ""),
-        "angry": ("Angry", ""),
-        "calm": ("Calm", ""),
-        "tired": ("Tired", ""),
-        "emo": ("Emo", ""),
-    },
-    "stress": ("Take it easy", ""),
-    "poop": ("Take a poop", ""),
-    "food": {
-        "meat": ("Meat", ""),
-        "egg": ("Egg", ""),
-        "dairy": ("Dairy", ""),
-        "vegetables": ("Veg", ""),
-        "fruit": ("Fruit", ""),
-        "good_fat": ("Good fat", ""),
-        "carbs": ("Carbs", ""),
-    },
-    "water": ("Drink the morning dew", ""),
-    "sleep": ("Time for a nap", ""),
-    "sport": ("Stretch a bit", ""),
-    "oracle": ("Make a wish", ""),
-}
-
-COMPLETION_COPY = {
-    "mood": ("Soaked in the sun", "Your mood is lifting"),
-    "stress": ("Took it easy", "No battles to fight today"),
-    "poop": ("Took a poop", "Your body feels light"),
-    "food": ("Nourished", "You looked after yourself"),
-    "water": ("Sipped the dew", "Fate feels a little softer"),
-    "sleep": ("Had a nice nap", "The big things can wait"),
-    "sport": ("Stretched a bit", "You got your body moving"),
-    "oracle": ("Made a wish", "Today will be okay"),
-}
-
-BUBBLE_CN_TEXT = {
-    "mood": {
-        "happy": ("高兴呀", ""),
-        "sad": ("丧一下", ""),
-        "angry": ("超生气", ""),
-        "calm": ("无事小神仙", ""),
-        "tired": ("困了", ""),
-        "emo": ("emo咯", ""),
-    },
-    "stress": ("松口气", ""),
-    "poop": ("田里施肥", ""),
-    "food": {
-        "meat": ("肉", ""),
-        "egg": ("蛋", ""),
-        "dairy": ("奶", ""),
-        "vegetables": ("菜", ""),
-        "fruit": ("果", ""),
-        "good_fat": ("油", ""),
-        "carbs": ("饭", ""),
-    },
-    "water": ("饮朝露", ""),
-    "sleep": ("睡觉觉", ""),
-    "sport": ("修命薄", ""),
-    "oracle": ("祈天", ""),
-}
-
-COMPLETION_CN_COPY = {
-    "mood": ("兰晒到太阳", "心又归位"),
-    "stress": ("一口气松了", "今日不斗法"),
-    "poop": ("田里通了", "身轻如燕"),
-    "food": ("饭已下肚", "也算修行"),
-    "water": ("露水下腹", "水水润润"),
-    "sleep": ("兰上云睡", "大事且慢"),
-    "sport": ("命叶已修", "筋骨动了"),
-    "oracle": ("签曰", "今日无妨"),
-}
-
-INTRO_PAGES = (
-    ("你来啦", "此处便是", "安得台"),
-    ("屏中这株兰", "不才", "正是今日的你"),
-    ("吃饭喝水", "松口气", "睡一觉"),
-    ("小事记下", "大道不急", "顺手便好"),
-    ("兰替你", "慢慢过完", "这一日"),
-)
-
-ORACLE_LINES = (
-    "TODAY OK",
-    "NO FIGHT",
-    "GO SLOW",
-    "SELF CARE",
-    "SMALL COUNTS",
-)
-
 ICON_POSITIONS = {
     "mood": (8, 8),
     "stress": (40, 8),
@@ -180,6 +100,11 @@ ICON_POSITIONS = {
     "sleep": (40, 212),
     "sport": (72, 212),
     "oracle": (104, 212),
+    "oracle_lan": (60, 164),
+}
+
+ICON_SIZES = {
+    "oracle_lan": (48, 48),
 }
 
 LAN_POSITION = {

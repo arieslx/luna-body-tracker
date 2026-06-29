@@ -14,15 +14,18 @@ from config import (
     HOME_SLOT_BG,
     HOME_SLOT_HIGHLIGHT,
     ICON_POSITIONS,
+    ICON_SIZES,
     ICONS,
     INTRO_PAGES,
     LAN_DIRTY_SIZE,
     LAN_FRAMES,
     LAN_POSITION,
     ORACLE_LINES,
+    ORACLE_STAND_IMAGE,
     ORACLE_SUMMARY_IMAGE,
     PIXEL_TEXT_ADVANCE,
     PLATFORMS,
+    RANDOM_ORACLE_ENTRANCE,
     TOP_TEXT_CLEAR_HEIGHT,
     TOP_TEXT_LINE_HEIGHT,
     TOP_TEXT_MAX_WIDTH,
@@ -82,23 +85,32 @@ def render_home(display, selected, is_night=False, frame_index=0):
     display.image(asset_path(background(is_night)), 0, 0)
     draw_home_lan(display, frame_index)
     for key, filename in ICONS.items():
-        render_home_icon(display, key, key == selected)
+        render_home_icon(display, key, key == selected, is_night)
     update(display)
 
 
-def render_home_selection(display, previous, selected):
+def render_home_selection(display, previous, selected, frame_index=0, is_night=False):
     if previous:
-        render_home_icon(display, previous, False)
-    render_home_icon(display, selected, True)
+        render_home_icon(display, previous, False, is_night)
+    render_home_icon(display, selected, True, is_night)
 
 
-def render_home_icon(display, key, selected):
+def render_home_icon(display, key, selected, is_night=False):
     x, y = ICON_POSITIONS[key]
-    fill_rect(display, x - 3, y - 3, 28, 28, HOME_SLOT_HIGHLIGHT if selected else HOME_SLOT_BG)
+    width, height = ICON_SIZES.get(key, (20, 20))
+    if key == RANDOM_ORACLE_ENTRANCE:
+        if hasattr(display, "image_crop"):
+            scene_path = asset_path(background(is_night))
+            display.image_crop(scene_path, x - 3, y - 3, width + 6, height + 6, x - 3, y - 3)
+        else:
+            display.image(asset_path(background(is_night)), 0, 0)
+        display.image(asset_path(ICONS[key]), x, y)
+        return
+    fill_rect(display, x - 3, y - 3, width + 6, height + 6, HOME_SLOT_HIGHLIGHT if selected else HOME_SLOT_BG)
     display.image(asset_path(ICONS[key]), x, y)
 
 
-def render_home_lan_frame(display, frame_index=0, is_night=False):
+def render_home_lan_frame(display, frame_index=0, is_night=False, selected=None):
     restore_home_lan_area(display, is_night)
     draw_home_lan(display, frame_index)
     update(display)
@@ -130,6 +142,7 @@ def render_action(display, entrance, frame_index=0, is_night=False):
 def render_action_frame(display, entrance, frame_index=0, is_night=False):
     restore_lan_area(display, entrance, is_night)
     draw_lan(display, entrance, frame_index)
+    update(display)
 
 
 def render_complete(display, entrance, is_night=False, completed_options=()):
@@ -178,6 +191,18 @@ def render_oracle_summary(display, daily_log, is_night=False, date_key=""):
     if date_key:
         draw_center(display, date_key, 232)
     draw_center(display, "A BACK", 214)
+    update(display)
+
+
+def render_random_oracle(display, line, is_night=False):
+    clear(display)
+    display.image(asset_path(soft_background(is_night)), 0, 0)
+    y = 16
+    for copy_line in wrap_lines((line,), DISPLAY_WIDTH - 10):
+        draw_center(display, copy_line, y)
+        y += TOP_TEXT_LINE_HEIGHT
+    display.image(asset_path(ORACLE_STAND_IMAGE), 0, 105)
+    draw_center(display, "A BACK", 224)
     update(display)
 
 

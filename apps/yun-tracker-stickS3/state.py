@@ -1,11 +1,13 @@
 """State machine for Yun Tracker StickS3."""
 
-from config import ENTRANCES, option_keys
+from config import ENTRANCES, NON_RECORD_ENTRANCES, option_keys
 
 
 def create_daily_log():
     log = {}
     for key in ENTRANCES:
+        if key in NON_RECORD_ENTRANCES:
+            continue
         options = option_keys(key)
         if options:
             log[key] = {}
@@ -22,6 +24,8 @@ def normalize_daily_log(value):
     raw = value if isinstance(value, dict) else {}
     log = create_daily_log()
     for key in ENTRANCES:
+        if key in NON_RECORD_ENTRANCES:
+            continue
         options = option_keys(key)
         raw_value = raw.get(key)
         if options:
@@ -54,6 +58,7 @@ class AppState:
         self.completed_options = ()
         self.pending_options = ()
         self.option_index = 0
+        self.random_oracle_line = ""
 
     def current_entrance(self):
         return ENTRANCES[self.selected_index]
@@ -76,6 +81,7 @@ class AppState:
         self.scene = "home"
         self.completed_entrance = None
         self.completed_options = ()
+        self.random_oracle_line = ""
         self.status = "READY"
 
     def current_option(self):
@@ -119,6 +125,11 @@ class AppState:
         self.scene = "action"
         self.frame_index = 0
         self.status = "ACTION {}".format(self.active_entrance)
+
+    def open_random_oracle(self, line):
+        self.scene = "random_oracle"
+        self.random_oracle_line = str(line)
+        self.status = "ORACLE"
 
     def next_intro(self):
         self.intro_index += 1

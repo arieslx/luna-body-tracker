@@ -8,12 +8,15 @@ import M5
 from config import (
     CN_TEXT_BG,
     CN_TEXT_COLOR,
+    DISPLAY_HEIGHT,
+    DISPLAY_WIDTH,
     NETWORK_CONNECT_TIMEOUT_SECONDS,
     NTP_HOSTS,
     PIXEL_TEXT_ADVANCE,
     PIXEL_TEXT_BOLD,
     PIXEL_TEXT_COLOR,
     TIMEZONE_OFFSET_SECONDS,
+    USE_CANVAS_BUFFER,
 )
 
 TEXT_BG = CN_TEXT_BG
@@ -64,9 +67,14 @@ PIXEL_FONT = {
 
 class StickS3Display:
     def __init__(self, screen=None):
-        self.screen = screen or M5.Display
+        self.output = screen or M5.Display
+        self.canvas = create_canvas(self.output) if screen is None and USE_CANVAS_BUFFER else None
+        self.screen = self.canvas or self.output
         self.current_font = None
         self.labels = []
+        self.canvas_failed = False
+        if self.canvas:
+            print("canvas enabled")
 
     def image(self, path, x, y):
         self.screen.drawImage(path, x, y)
@@ -137,9 +145,9 @@ class StickS3Display:
         if target == self.current_font:
             return
         if target == "cn":
-            self.screen.setFont(self.screen.FONTS.AlibabaPuHuiTiCN24)
+            self.output.setFont(self.output.FONTS.AlibabaPuHuiTiCN24)
         else:
-            self.screen.setFont(self.screen.FONTS.ASCII7)
+            self.output.setFont(self.output.FONTS.ASCII7)
         self.current_font = target
 
     def clear(self):
@@ -153,6 +161,13 @@ class StickS3Display:
         self.labels = []
 
     def update(self):
+        if self.canvas and not self.canvas_failed:
+            try:
+                self.canvas.push(0, 0)
+            except Exception as error:
+                self.canvas_failed = True
+                self.screen = self.output
+                print("canvas disabled:", error)
         M5.update()
 
     def fill_rect(self, x, y, w, h, color):
@@ -170,6 +185,19 @@ class StickS3Display:
 def begin_device():
     M5.begin()
     return StickS3Display()
+
+
+def create_canvas(output):
+    try:
+        return output.newCanvas(DISPLAY_WIDTH, DISPLAY_HEIGHT, 16)
+    except TypeError:
+        try:
+            return output.newCanvas(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        except Exception as error:
+            print("skip canvas:", error)
+    except Exception as error:
+        print("skip canvas:", error)
+    return None
 
 
 def sync_time_if_wifi():
