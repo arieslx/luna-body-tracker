@@ -4,6 +4,12 @@
   "description": "A calm offline new-tab body and mind tracker.",
   "version": "0.2.0",
   "permissions": ["storage"],
+  "icons": {
+    "16": "icon.png",
+    "32": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   }

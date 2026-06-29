@@ -1,5 +1,5 @@
 const CACHE_NAME = "luna-body-tracker-pwa-v1";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.svg"];
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

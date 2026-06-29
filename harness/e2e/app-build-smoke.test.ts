@@ -29,6 +29,6 @@ describe("extension and PWA build smoke harness", () => {
     });
     expect(html).toContain("/manifest.webmanifest");
     expect(existsSync(repoPath("apps/web/dist/sw.js"))).toBe(true);
-    expect(existsSync(repoPath("apps/web/dist/icons/icon.svg"))).toBe(true);
+    expect(existsSync(repoPath("apps/web/dist/icons/icon.png"))).toBe(true);
   });
 });
