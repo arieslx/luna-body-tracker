@@ -34,7 +34,11 @@ Main secens:
 ![Yun Tracker mood platform](apps/yun-tracker-stickS3/assets-device/platform_mood.png)
 ![Yun Tracker food platform](apps/yun-tracker-stickS3/assets-device/platform_food.png)
 ![Yun Tracker sleep platform](apps/yun-tracker-stickS3/assets-device/platform_sleep.png)
-![Yun Tracker oracle platform](apps/yun-tracker-stickS3/assets-device/platform_oracle.png)
+![Yun Tracker oracle platform](apps/yun-tracker-stickS3/assets-device/platform_oracle.png):
+
+Main flow: 
+
+check pr: 
 
 
 Current device features:
