@@ -38,7 +38,7 @@ Main secens:
 
 Main flow: 
 
-check pr: 
+check pr: https://github.com/arieslx/luna-body-tracker/pull/1
 
 
 Current device features:
