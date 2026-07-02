@@ -26,12 +26,16 @@ The StickS3 experiments explore a low-pressure, record-driven handheld companion
 
 Lan is the user's small avatar in Andetai. Mood, stress, bowel movement, food, water, sleep, movement, and oracle actions map to small platform scenes.
 
+Introduction:
+![Yun Tracker](docs/pics/yun.png)
+
+Main secens:
 ![Yun Tracker day home](apps/yun-tracker-stickS3/assets-device/day.png)
-![Yun Tracker day background](apps/yun-tracker-stickS3/assets-device/day_bg.png)
 ![Yun Tracker mood platform](apps/yun-tracker-stickS3/assets-device/platform_mood.png)
 ![Yun Tracker food platform](apps/yun-tracker-stickS3/assets-device/platform_food.png)
 ![Yun Tracker sleep platform](apps/yun-tracker-stickS3/assets-device/platform_sleep.png)
 ![Yun Tracker oracle platform](apps/yun-tracker-stickS3/assets-device/platform_oracle.png)
+
 
 Current device features:
 
@@ -42,12 +46,10 @@ Current device features:
 - ASCII pixel text rendering for transparent text without firmware text backgrounds.
 - Local JSON daily log storage on the device filesystem.
 
-### Tree Tracker StickS3
+### Tree Tracker StickS3（Deprecated）
 
 The first StickS3 prototype is a tree-avatar habit tracker with day/night scenes, food categories, water, mood, movement, and export-oriented record data.
 
-![Tree Tracker day](apps/tracker-stickS3/assets-device/day.png)
-![Tree Tracker night](apps/tracker-stickS3/assets-device/night.png)
 ![Tree Tracker water](apps/tracker-stickS3/assets-device/water.png)
 ![Tree Tracker sleep](apps/tracker-stickS3/assets-device/sleep.png)
 
