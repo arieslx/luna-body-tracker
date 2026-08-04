@@ -1,5 +1,7 @@
 # Luna Body Tracker
 
+Gentle self care routine & tracker.
+
 Luna Body Tracker is a local-first, extensible body and mind tracking system for humans and AI agents.
 
 It helps people record daily body signals, mood, food, sleep, menstrual cycle, bowel movements, notes, and custom personal modules. The project starts from a Chrome extension and grows into a shared open core for a PWA web app, AI skill, and future device integrations.
