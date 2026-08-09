@@ -2,6 +2,7 @@ node_modules/
 .pnpm-store/
 dist/
 coverage/
+storybook-static/
 .DS_Store
 *.log
 __pycache__/

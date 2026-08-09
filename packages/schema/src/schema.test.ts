@@ -19,6 +19,9 @@ describe("DailyRecord schema", () => {
         mood: { value: "grin" },
         water: { value: 2, unit: "bowl", targetValue: 8 },
         sleep: { value: 3, unit: "hour" },
+        drinks: { selected: ["americano", "latte"] },
+        exercise: { entries: [{ category: "cardio", name: "walk", minutes: 30 }] },
+        supplements: { text: "Vitamin D" },
         weight: { kg: 73 },
         poop: { count: 2, label: "2" },
         note: { text: "Slept late, woke early." }
@@ -32,6 +35,31 @@ describe("DailyRecord schema", () => {
     });
 
     expect(result.modules.water).toEqual({ value: 2, unit: "bowl", targetValue: 8 });
+  });
+
+  it("accepts the compatible local-first module extensions", () => {
+    const result = dailyRecordSchema.parse({
+      id: "daily_2026-08-10",
+      date: "2026-08-10",
+      timezone: "Asia/Shanghai",
+      schemaVersion: 1,
+      modules: {
+        sleep: { value: 7.5, unit: "hour", bedtime: "23:00", wakeTime: "06:30" },
+        drinks: { selected: ["latte"] },
+        exercise: { entries: [{ category: "strength", name: "yoga", minutes: 20 }] },
+        supplements: { text: "magnesium" },
+        futureBodySignal: { value: 42, device: "future-device" }
+      },
+      meta: {
+        recordedModuleIds: ["sleep", "drinks", "exercise", "supplements", "futureBodySignal"],
+        source: "web",
+        createdAt: "2026-08-10T08:00:00+08:00",
+        updatedAt: "2026-08-10T08:00:00+08:00"
+      }
+    });
+
+    expect(result.modules.sleep).toMatchObject({ bedtime: "23:00", wakeTime: "06:30" });
+    expect(result.modules.futureBodySignal).toEqual({ value: 42, device: "future-device" });
   });
 
   it("reports invalid records with field paths", () => {
@@ -68,6 +96,7 @@ describe("ModuleDefinition defaults", () => {
     expect(systemModuleDefinitions.map((module) => module.id)).toEqual([
       "mood",
       "water",
+      "drinks",
       "sleep",
       "weight",
       "foodPool",
@@ -75,6 +104,7 @@ describe("ModuleDefinition defaults", () => {
       "meals",
       "poop",
       "menstrual",
+      "supplements",
       "note"
     ]);
 

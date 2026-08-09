@@ -4,7 +4,14 @@ export const recordSourceSchema = z.enum(["extension", "web", "ai_skill", "devic
 
 export const moodValueSchema = z.object({ value: z.string().min(1) }).strict();
 export const waterValueSchema = z.object({ value: z.number().int().nonnegative(), unit: z.literal("bowl"), targetValue: z.number().int().positive().optional() }).strict();
-export const sleepValueSchema = z.object({ value: z.number().nonnegative(), unit: z.literal("hour") }).strict();
+export const sleepValueSchema = z
+  .object({
+    value: z.number().nonnegative(),
+    unit: z.literal("hour"),
+    bedtime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+    wakeTime: z.string().regex(/^\d{2}:\d{2}$/).optional()
+  })
+  .strict();
 export const weightValueSchema = z.object({ kg: z.number().positive() }).strict();
 export const foodPoolItemSchema = z
   .object({
@@ -38,6 +45,16 @@ export const menstrualValueSchema = z
   })
   .strict();
 export const noteValueSchema = z.object({ text: z.string() }).strict();
+export const drinksValueSchema = z.object({ selected: z.array(z.string().min(1)) }).strict();
+export const exerciseEntrySchema = z
+  .object({
+    category: z.enum(["cardio", "strength"]),
+    name: z.string().min(1),
+    minutes: z.number().int().nonnegative()
+  })
+  .strict();
+export const exerciseValueSchema = z.object({ entries: z.array(exerciseEntrySchema) }).strict();
+export const supplementsValueSchema = z.object({ text: z.string() }).strict();
 
 export const moduleValueSchema = z.union([
   moodValueSchema,
@@ -49,6 +66,9 @@ export const moduleValueSchema = z.union([
   poopValueSchema,
   menstrualValueSchema,
   noteValueSchema,
+  drinksValueSchema,
+  exerciseValueSchema,
+  supplementsValueSchema,
   z.record(z.unknown())
 ]);
 
@@ -73,6 +93,18 @@ export const dailyRecordSchema = z
   .strict();
 
 export type RecordSource = z.infer<typeof recordSourceSchema>;
+export type MoodValue = z.infer<typeof moodValueSchema>;
+export type WaterValue = z.infer<typeof waterValueSchema>;
+export type SleepValue = z.infer<typeof sleepValueSchema>;
+export type WeightValue = z.infer<typeof weightValueSchema>;
+export type FoodPoolValue = z.infer<typeof foodPoolValueSchema>;
+export type MealsValue = z.infer<typeof mealsValueSchema>;
+export type DrinksValue = z.infer<typeof drinksValueSchema>;
+export type ExerciseEntry = z.infer<typeof exerciseEntrySchema>;
+export type ExerciseValue = z.infer<typeof exerciseValueSchema>;
+export type PoopValue = z.infer<typeof poopValueSchema>;
+export type SupplementsValue = z.infer<typeof supplementsValueSchema>;
+export type NoteValue = z.infer<typeof noteValueSchema>;
 export type ModuleValue = z.infer<typeof moduleValueSchema>;
 export type DailyRecordMeta = z.infer<typeof dailyRecordMetaSchema>;
 export type DailyRecord = z.infer<typeof dailyRecordSchema>;

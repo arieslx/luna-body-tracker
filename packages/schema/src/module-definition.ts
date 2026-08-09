@@ -34,6 +34,7 @@ const systemModuleCreatedAt = "2026-06-15T00:00:00+08:00";
 export const systemModuleDefinitions: ModuleDefinition[] = [
   createSystemModule("mood", "Mood", "mind", "personal"),
   createSystemModule("water", "Water", "intake", "normal"),
+  createSystemModule("drinks", "Drinks", "intake", "normal"),
   createSystemModule("sleep", "Sleep", "body", "personal"),
   createSystemModule("weight", "Weight", "body", "sensitive"),
   createSystemModule("foodPool", "Food Pool", "intake", "personal"),
@@ -41,6 +42,7 @@ export const systemModuleDefinitions: ModuleDefinition[] = [
   createSystemModule("meals", "Meals", "intake", "personal"),
   createSystemModule("poop", "Bowel Movement", "body", "sensitive"),
   createSystemModule("menstrual", "Menstrual Cycle", "cycle", "sensitive"),
+  createSystemModule("supplements", "Supplements", "intake", "personal"),
   createSystemModule("note", "Note", "note", "personal")
 ];
 

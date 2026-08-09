@@ -1,5 +1,7 @@
 # MVP Roadmap
 
+> **Historical roadmap:** This document records Luna's earlier Extension/PWA/sync-server exploration. That product scope was superseded in August 2026 by the approved [Product Scope Consolidation Spec](./product-scope-consolidation-spec.md). The active product surfaces are now the Web App, Luna Skill, and Yun Tracker StickS3. Extension, sync-server, and the older tree tracker references below are retained only as product history and are not current setup instructions.
+
 ## Goal
 
 Build a working open-source monorepo for a local-first body and mind record system.

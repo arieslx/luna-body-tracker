@@ -7,11 +7,18 @@
   "packageManager": "pnpm@10.12.1",
   "type": "module",
   "scripts": {
-    "test": "vitest run",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "test": "vitest run --exclude docs/landing-page/tests/**",
     "test:harness": "pnpm --filter @luna-body-tracker/harness test",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^10.5.7",
+    "@storybook/react-vite": "^10.5.7",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "storybook": "^10.5.7",
     "typescript": "^5.4.0",
     "vitest": "^1.6.0"
   }

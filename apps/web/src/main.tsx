@@ -1,11 +1,16 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { LunaTrackerApp } from "@luna-body-tracker/ui";
-import "@luna-body-tracker/ui/styles.css";
-import "./pwa";
+import { App } from "./App";
+import { LunaRecordProvider } from "./data/record-context";
+import { I18nProvider } from "./i18n";
+import "./styles.css";
 
 createRoot(document.querySelector("#root")!).render(
   <React.StrictMode>
-    <LunaTrackerApp />
-  </React.StrictMode>
+    <I18nProvider>
+      <LunaRecordProvider>
+        <App />
+      </LunaRecordProvider>
+    </I18nProvider>
+  </React.StrictMode>,
 );

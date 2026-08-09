@@ -1,76 +1,52 @@
 # Deployment Guide
 
-## Non-technical User Flow
+## Web App
 
-Use the app in three parts:
+Luna's active user-facing application is the frontend-only Web App in `apps/web`.
 
-1. Install the Chrome extension on the computer.
-2. Open the web app on the phone and add it to the home screen.
-3. Move data with a backup file or with a sync code.
-
-Backup file flow:
-
-```text
-Extension or Web App
-  -> Export JSONL
-  -> Save the backup file
-  -> Import JSONL on another device
-```
-
-Sync flow:
-
-```text
-Extension or Web App
-  -> Settings
-  -> Add sync address, name, and sync code
-  -> Tap Sync
-```
-
-For two people using one service, each person should use a different name and sync code. Records are private to that profile.
-
-## Developer Deployment
-
-Build the extension:
-
-```sh
-pnpm --filter @luna-body-tracker/extension build
-```
-
-Load `apps/extension/dist` as an unpacked Chrome extension.
-
-Build the PWA:
+Build it with:
 
 ```sh
 pnpm --filter @luna-body-tracker/web build
 ```
 
-Deploy `apps/web/dist` to static hosting such as a NAS web service, Cloudflare Pages, Netlify, Vercel, or GitHub Pages.
+Deploy `apps/web/dist` to static hosting such as Cloudflare Pages, Netlify, Vercel, GitHub Pages, or a NAS web service.
 
-Build and run the optional sync server:
+The generated output includes:
+
+- `index.html`
+- versioned JavaScript and CSS assets
+- `manifest.webmanifest`
+- `sw.js`
+- the Luna app icon
+
+Use HTTPS in production so installable web-app features and service workers work consistently.
+
+## Local Preview
 
 ```sh
-pnpm --filter @luna-body-tracker/sync-server build
-LUNA_SYNC_HOST=0.0.0.0 LUNA_SYNC_PORT=4000 pnpm --filter @luna-body-tracker/sync-server start
+pnpm --filter @luna-body-tracker/web dev
 ```
 
-The `build` command type-checks the server. The `start` command runs the TypeScript source through `tsx`, matching the current workspace package export strategy.
+The development server starts on `http://127.0.0.1:5173` by default.
 
-For phone PWA usage, put the web app and sync server behind HTTPS and a domain. A reverse proxy is preferred over asking users to type an IP address and port.
+## Data Portability
 
-## Sync Server Notes
+Luna keeps Markdown and JSONL as the intended open exchange formats. The current interaction prototype does not require a server. Until a future sync design is validated, moving records between installations should use explicit export/import flows rather than an unverified background service.
 
-API:
+## Skill Verification
 
-- `GET /api/health`
-- `POST /api/sync/push`
-- `POST /api/sync/pull`
+The Skill is not part of the static Web deployment. Verify it independently:
 
-The first valid push creates a profile with that sync key. Later requests must use the same key.
-
-Default server storage:
-
-```text
-apps/sync-server/data/profiles/<profileId>/snapshot.json
+```sh
+pnpm --filter @luna-body-tracker/skill typecheck
+pnpm --filter @luna-body-tracker/skill self-check
 ```
 
-Do not expose the sync server without HTTPS. End-to-end encrypted sync is reserved for a later phase.
+## Yun Tracker
+
+Yun Tracker is a separate hardware target under `apps/yun-tracker-stickS3`. Follow its README, launcher, and troubleshooting documentation for device installation. Web hosting does not flash or configure the StickS3 device.
+
+## Sync Status
+
+There is currently no supported sync-server deployment. The earlier server implementation was removed because it had not been product-validated. `packages/sync-protocol` remains as compatibility and research material for a future, separately reviewed sync iteration.

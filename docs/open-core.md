@@ -2,65 +2,50 @@
 
 ## Current Decision
 
-The MVP starts as a single open-source monorepo.
+Luna remains a single open-source monorepo while the product is centered on the Web App, Luna Skill, and Yun Tracker StickS3.
 
-This keeps development fast, reduces repository management overhead, and makes it easier to evolve the shared schema across extension, PWA, and AI skill.
+This keeps the visual language, record schema, open exchange formats, agent behavior, and hardware experiments close enough to evolve together without forcing them into one runtime.
 
 ## Open Source Scope
 
-The open-source repository contains:
+The repository currently contains:
 
-- Core schema
-- Chrome extension
-- PWA web app
-- AI skill
-- Import/export tools
-- Plugin API draft
-- Local-first storage
-- Basic UI components
+- Mobile-first Luna Web App and interaction prototype
+- Luna Skill and AI Skill SDK
+- Yun Tracker StickS3 hardware companion
+- Core record schema
+- Markdown and JSONL import/export tools
+- Shared illustration library and Storybook
+- Compatibility sync protocol research
 - Harness fixtures and tests
-- Documentation
+- Product and architecture documentation
 
-## Future Paid or Private Scope
+## Not Currently Shipped
 
-These areas may become paid features or separate private repositories later:
+- Browser Extension
+- Hosted or self-hosted sync service
+- Account system
+- Cloud database
+- Payment or marketplace
 
-- Cloud sync
-- Hosted service
-- Advanced AI analysis
-- Device bridge
-- Premium plugins
-- Private deployment tools
-- Team or practitioner workflows
-- Plugin marketplace operations
+The removed sync server had not been validated. Its removal narrows the current product; it does not prevent a future, properly specified sync implementation.
 
 ## Boundary Principle
 
-The open-source version should remain complete and useful.
+The open-source product should remain useful without a hosted service. Future paid or private work may add convenience, automation, deeper analysis, or managed infrastructure, but should not make open formats or basic local use artificially incomplete.
 
-Paid or private features should add convenience, automation, deeper analysis, hosted infrastructure, or specialized integrations rather than making the open-source core unusable.
+## Possible Future Private Scope
+
+- Validated hosted sync
+- End-to-end encrypted backup
+- Advanced AI reflection
+- Fleet or practitioner deployment tools
+- Premium integrations
 
 ## License Policy
 
-The current repository is licensed under Apache-2.0 by default.
+The current repository is licensed under Apache-2.0. Future hosted or private modules may use separate licenses when there is a concrete operational reason.
 
-Future commercial, hosted, or private modules may be released under separate licenses.
+## Repository Expansion
 
-## Repository Expansion Plan
-
-Start:
-
-```text
-luna-body-tracker
-```
-
-Possible future split:
-
-```text
-luna-body-tracker-pro
-luna-body-tracker-infra
-luna-body-tracker-device
-luna-body-tracker-cloud
-```
-
-Do not split until there is a clear operational or business reason.
+Do not split repositories until product boundaries require independent release, security, ownership, or deployment workflows.
