@@ -2,6 +2,12 @@
 
 Luna is a gentle self-care journal for noticing how life and the body feel without turning everyday care into a health dashboard.
 
+## Product Preview
+
+![Luna mood, sleep, and food journaling interfaces](docs/landing-page/public/luna-showcase-mood-sleep-food.png)
+
+![Luna water, movement, and body journaling interfaces](docs/landing-page/public/luna-showcase-water-movement-body.png)
+
 The current product iteration is intentionally focused on three surfaces:
 
 - **Web App** — the primary mobile-first interaction prototype and future product UI.
@@ -33,11 +39,6 @@ pnpm --filter @luna-body-tracker/skill self-check
 ### Yun Tracker StickS3
 
 `apps/yun-tracker-stickS3` contains the active M5Stack StickS3 hardware experiment. Mood, food, water, sleep, movement, bowel movement, stress, and oracle actions become small scenes in Yun's world.
-
-![Yun Tracker](docs/pics/yun.png)
-![Yun Tracker day home](apps/yun-tracker-stickS3/assets-device/day.png)
-![Yun Tracker mood platform](apps/yun-tracker-stickS3/assets-device/platform_mood.png)
-![Yun Tracker food platform](apps/yun-tracker-stickS3/assets-device/platform_food.png)
 
 ## Shared Packages
 

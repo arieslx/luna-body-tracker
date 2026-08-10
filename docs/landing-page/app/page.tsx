@@ -144,6 +144,34 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="product-showcase" aria-labelledby="product-showcase-title">
+        <div className="showcase-heading">
+          <span className="section-index">PRODUCT / A DAY WITH LUNA</span>
+          <h2 id="product-showcase-title">每一种身体信号，<br/>都在同一处被看见。</h2>
+          <p>从情绪与睡眠，到饮水、运动和身体状态。Luna 用安静一致的界面，陪你完成每天的自我观察。</p>
+        </div>
+        <div className="showcase-gallery">
+          <figure>
+            <img
+              alt="Luna 的心情、睡眠和饮食记录界面，展示在三台相同尺寸的移动设备上"
+              height="1086"
+              loading="lazy"
+              src="/luna-showcase-mood-sleep-food.png"
+              width="1448"
+            />
+          </figure>
+          <figure>
+            <img
+              alt="Luna 的饮水、运动和身体记录界面，展示在三台相同尺寸的移动设备上"
+              height="1086"
+              loading="lazy"
+              src="/luna-showcase-water-movement-body.png"
+              width="1448"
+            />
+          </figure>
+        </div>
+      </section>
+
       <section className="feature-section" id="features">
         <div className="section-heading">
           <span className="section-index">01 / WHAT LUNA DOES</span>
