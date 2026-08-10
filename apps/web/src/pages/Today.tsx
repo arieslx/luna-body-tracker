@@ -10,10 +10,10 @@ import { SleepSection } from "../components/SleepSection";
 import { useLunaRecords } from "../data/record-context";
 import { toLocalDateKey } from "../data/dates";
 import { filledSections, moduleValue } from "../data/record-mapper";
+import type { SleepValue } from "../data/sleep-time";
 
 type TextValue = { text: string };
 type MoodValue = { value: string };
-type SleepValue = { value: number; unit: "hour"; bedtime?: string; wakeTime?: string };
 type FoodPoolValue = Record<string, { name: string; amount: number; label?: string }>;
 type MealsValue = Record<string, string | undefined>;
 type WaterValue = { value: number; unit: "bowl"; targetValue?: number };

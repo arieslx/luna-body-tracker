@@ -3,6 +3,7 @@ import { exportMarkdown, parseJsonl, writeJsonl } from "@luna-body-tracker/impor
 import { systemModuleDefinitions } from "@luna-body-tracker/schema";
 import { useLunaRecords } from "../data/record-context";
 import { toLocalDateKey } from "../data/dates";
+import { migrateLegacyRecord } from "../data/record-migration";
 import { useI18n } from "../i18n";
 
 function download(filename: string, content: string, type: string) {
@@ -37,14 +38,15 @@ export function Settings({ onBack }: { onBack: () => void }) {
   async function importFile(file: File) {
     try {
       const snapshot = parseJsonl(await file.text());
-      const conflicts = snapshot.dailyRecords.filter((record) => records.has(record.date));
-      const fresh = snapshot.dailyRecords.length - conflicts.length;
+      const importedRecords = snapshot.dailyRecords.map((record) => migrateLegacyRecord(record, snapshot.settings));
+      const conflicts = importedRecords.filter((record) => records.has(record.date));
+      const fresh = importedRecords.length - conflicts.length;
       setImportMessage(`${fresh} 个新日期 · ${conflicts.length} 个同日记录`);
       if (conflicts.length && !window.confirm(`有 ${conflicts.length} 天已存在记录。要用备份替换这些日期吗？`)) return;
-      await replaceRecords(snapshot.dailyRecords);
+      await replaceRecords(importedRecords);
       const importedFocus = snapshot.settings.find((setting) => Array.isArray(setting.weeklyFocus))?.weeklyFocus;
       if (Array.isArray(importedFocus)) setWeeklyFocus(importedFocus.filter((metric): metric is typeof weeklyFocus[number] => typeof metric === "string" && ["mood", "food", "sleep", "movement", "water", "body", "notes"].includes(metric)).slice(0, 3));
-      setImportMessage(`已恢复 ${snapshot.dailyRecords.length} 天记录`);
+      setImportMessage(`已恢复 ${importedRecords.length} 天记录`);
     } catch (error) {
       setImportMessage(error instanceof Error ? `无法导入：${error.message}` : "无法导入这个文件");
     } finally {

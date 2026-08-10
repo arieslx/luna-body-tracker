@@ -29,3 +29,13 @@ export function currentWeekDateKeys(referenceDate = new Date()): string[] {
     return toLocalDateKey(date);
   });
 }
+
+export function dateKeyToLocalDate(dateKey: string): Date {
+  return new Date(`${dateKey}T12:00:00`);
+}
+
+export function shiftDateKey(dateKey: string, days: number): string {
+  const date = dateKeyToLocalDate(dateKey);
+  date.setDate(date.getDate() + days);
+  return toLocalDateKey(date);
+}

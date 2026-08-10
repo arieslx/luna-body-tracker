@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useI18n } from "../i18n";
+import { normalizeSleepValue, type SleepValue } from "../data/sleep-time";
 
 const hourTimes = ["13", "12", "11", "10", "09", "08", "07", "06", "05", "04", "03", "02", "01", "00", "23", "22", "21", "20", "19"];
 const times = hourTimes.flatMap((hour, index) => {
@@ -40,8 +41,6 @@ function formatTime(index: number) {
   return `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}`;
 }
 
-type SleepValue = { value: number; unit: "hour"; bedtime?: string; wakeTime?: string };
-
 function indexForTime(value: string | undefined, fallback: number) {
   if (!value) return fallback;
   const index = times.findIndex((time) => `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}` === value);
@@ -50,8 +49,9 @@ function indexForTime(value: string | undefined, fallback: number) {
 
 export function SleepSection({ value, onChange }: { value?: SleepValue; onChange: (value: SleepValue) => void }) {
   const { t } = useI18n();
-  const bedtime = indexForTime(value?.bedtime, 28);
-  const wakeTime = indexForTime(value?.wakeTime, 12);
+  const normalizedValue = normalizeSleepValue(value ?? { value: 8, unit: "hour" });
+  const bedtime = indexForTime(normalizedValue.bedtime, 28);
+  const wakeTime = indexForTime(normalizedValue.wakeTime, 12);
   const dialRef = useRef<HTMLDivElement>(null);
   const arcCanvasRef = useRef<HTMLCanvasElement>(null);
 

@@ -55,6 +55,9 @@ export function FoodSection({ selected, mealNotes, onSelectedChange, onMealNotes
 }) {
   const { t } = useI18n();
   const [falling, setFalling] = useState<{ id: number; food: (typeof foods)[number] } | null>(null);
+  const selectedFoods = selected
+    .map((id) => foods.find((food) => food.id === id))
+    .filter((food): food is (typeof foods)[number] => Boolean(food));
 
   function addFood(food: (typeof foods)[number]) {
     onSelectedChange(selected.includes(food.id) ? selected : [...selected, food.id]);
@@ -91,13 +94,13 @@ export function FoodSection({ selected, mealNotes, onSelectedChange, onMealNotes
         <div className="illustrated-place-setting" aria-hidden="true">
           <PlaceSettingIllustration className="plate-svg" decorative size="100%" />
           <div className="plate-foods">
-            {selected.map((id) => {
-              const food = foods.find((item) => item.id === id)!;
+            {selectedFoods.map((food) => {
+              const id = food.id;
               return <span className="plated-food" key={id}><FoodIcon id={food.id} /></span>;
             })}
           </div>
         </div>
-        <p>{selected.length === 0 ? t("today.food.emptyPlate") : selected.map((id) => foods.find((food) => food.id === id)).filter((food): food is (typeof foods)[number] => Boolean(food)).map((food) => t(food.labelKey as MessageKey)).join(" · ")}</p>
+        <p>{selectedFoods.length === 0 ? t("today.food.emptyPlate") : selectedFoods.map((food) => t(food.labelKey as MessageKey)).join(" · ")}</p>
         <small className="plate-guidance">{t("today.food.guidance")}</small>
       </div>
 
