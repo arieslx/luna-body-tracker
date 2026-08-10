@@ -1,5 +1,5 @@
 # @luna-body-tracker/storage
 
-Reserved package for shared local-first storage adapters.
-
-The MVP currently keeps IndexedDB logic inside `@luna-body-tracker/ui` so the extension and PWA can share the same behavior. Move storage code here when multiple storage adapters, migrations, or sync boundaries are needed.
+Local-first persistence for Luna. The browser adapter stores complete validated
+`DailyRecord` objects in IndexedDB; the memory adapter provides the same API for
+tests and non-browser previews.

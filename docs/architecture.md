@@ -1,126 +1,91 @@
 # Architecture
 
-## Product Positioning
+## Current Product Surfaces
 
-Luna Body Tracker is a local-first body and mind record system with multiple input surfaces:
-
-- Chrome extension for fast daily tracking
-- PWA web app for record, review, import, visualization, and settings
-- AI skill for agent-native reading, writing, summary, and validation
-- Optional self-hosted sync server for cross-device extension/PWA sync
-- [PENDING] Future device bridge for physical tracking devices such as M5Stack
-
-The product is not only a tracker. It is a personal data protocol for recurring body and mind patterns.
-
-## Core Layers
+Luna currently has three active product surfaces:
 
 ```text
-Core schema
-  DailyRecord
-  ModuleDefinition
-  ModuleLifecycle
-  Import/export formats
-  Migration rules
+Web App
+  Mobile-first self-care journal and interaction prototype
 
-Storage
-  IndexedDB local storage
-  Import/export snapshots
-  Self-hosted sync protocol and server
+Luna Skill
+  Controlled record reading, validation, export, and summary
 
-Apps
-  Chrome extension
-  PWA web app
-  AI skill
-  Sync server
-
-Harness
-  Schema fixtures
-  Import/export roundtrip tests
-  UI workflow tests
-  AI tool-call replay
+Yun Tracker StickS3
+  Physical companion and local daily interaction experiment
 ```
 
-## Data Model Strategy
+The Web App is the primary product UI. The Skill and Yun Tracker are companion surfaces, not alternate copies of the Web interface.
 
-The MVP uses a hybrid model:
-
-- One `DailyRecord` per date.
-- Each daily record contains module values.
-- Some modules may contain event entries internally.
-
-This keeps the daily bento tracking experience simple while allowing future detail such as exact meal times, bowel movement entries, device events, or AI-generated annotations.
-
-## Module Strategy
-
-Modules are not just hardcoded fields. They are defined by `ModuleDefinition`.
-
-Module origins:
-
-- `system`: built-in templates such as mood, water, sleep, weight, food pool, meals, poop, menstrual, and note
-- `user`: custom modules created by the user
-- `plugin`: modules registered by future plugins
-
-Lifecycle rules:
-
-- System modules can be hidden but cannot be deleted.
-- User modules can be created and soft deleted.
-- Soft-deleted modules remain available for historical records.
-- Plugin modules become inactive if the plugin is removed.
-
-## Privacy Strategy
-
-The MVP does not implement complex encryption or per-module permission prompts.
-
-Instead, it supports a global sensitive visibility state:
+## Shared Layers
 
 ```text
-normal display
-blur sensitive data
-temporary reveal
+Illustration and UI language
+  packages/ui
+  Storybook
+
+Record model and exchange
+  packages/schema
+  packages/import-export
+
+Agent integration
+  packages/ai-skill-sdk
+  apps/skill
+
+Compatibility research
+  packages/sync-protocol
 ```
 
-Modules may still declare sensitivity metadata so exports, screenshots, AI summaries, and future sharing flows can handle sensitive data more carefully.
+## Web Architecture
 
-## Sync Strategy
+`apps/web` is a React 18 + TypeScript + Vite application with custom CSS. The current prototype is frontend-only and uses local component state to validate Luna's visual language and interaction model.
 
-The extension and PWA may run on different physical devices, so browser message passing is only a same-device convenience. Cross-device sync uses an optional self-hosted server and a versioned sync protocol.
+Primary page structure:
 
-The MVP sync model is:
+- Today — Mood, Sleep, Food, Drink, Movement, Body, and Notes
+- Weeks — calm weekly summaries with editable daily detail
+- Settings — explicit export entry points
+
+The Web App imports reusable illustrations from `packages/ui`, while keeping product-specific layout and interaction components inside `apps/web`.
+
+## Data Model Direction
+
+The retained shared schema models daily records and module definitions. Open Markdown and JSONL formats remain the intended durable exchange boundary.
+
+The current Web prototype does not yet connect its visual state to a persistence adapter. Persistence work must be specified separately rather than silently restoring the older application shell.
+
+## Skill Architecture
+
+AI agents should access Luna records through controlled capabilities rather than reading raw storage directly:
 
 ```text
-client local storage
-  -> schema-validated sync envelope
-  -> self-hosted sync server
-  -> schema-validated pull into another client
+list modules
+read daily records
+write validated records
+summarize a period
+export open formats
 ```
 
-Each deployment may host multiple profiles. A profile-scoped sync key isolates each person's records, module definitions, and AI context without requiring a full account system in the MVP.
+The Skill core remains protocol-neutral so future adapters can expose the same behavior through appropriate agent tool systems.
 
-## AI Skill Strategy
+## Hardware Architecture
 
-AI agents should not read raw storage directly. They should use controlled tools:
+`apps/yun-tracker-stickS3` is the active physical companion. Device storage and UIFlow/MicroPython behavior remain isolated from the Web build. Shared meaning may converge at the schema or export boundary, but the device must not depend on a live Web backend.
 
-```text
-list_modules()
-read_daily_records()
-write_daily_record()
-validate_records()
-summarize_period()
-export_records()
-```
+## Sync Boundary
 
-The skill core should be protocol-neutral. Different adapters can expose the same capabilities through MCP, OpenAPI, JSON-RPC, CLI, or other agent tool systems.
+No active sync service is part of the current architecture. The previous server implementation was removed because it had not been validated with the product experience.
 
-## Future Commercial Boundary
+`packages/sync-protocol` remains temporarily because shared UI and harness code still reference its versioned envelopes. Keeping the protocol does not mean the current Web App supports sync. Any future service must receive its own product specification, privacy review, threat model, and end-to-end validation.
 
-The first repository is open source. Future commercial or private work may be split into separate repositories only when needed.
+## Privacy Direction
 
-Possible future private or paid areas:
+- Backend-free by default
+- Open, user-owned export formats
+- No account requirement in the current prototype
+- No medical diagnosis or clinical interpretation
+- Controlled AI access rather than unrestricted storage access
 
-- Cloud sync
-- End-to-end encrypted sync
-- Advanced AI analysis
-- Device bridge
-- Private deployment dashboard
-- Plugin marketplace
-- Premium visualizations
+## Future Boundaries
+
+Potential future work includes persistence adapters, validated cross-device sync, advanced AI reflection, and deeper Web/Yun exchange. None of these should be treated as shipped capabilities until separately implemented and verified.

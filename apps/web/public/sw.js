@@ -1,4 +1,4 @@
-const CACHE_NAME = "luna-body-tracker-pwa-v1";
+const CACHE_NAME = "luna-body-tracker-pwa-v2";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.png"];
 
 self.addEventListener("install", (event) => {
@@ -19,6 +19,14 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  const isDevelopmentAsset =
+    url.pathname.startsWith("/node_modules/") ||
+    url.pathname.startsWith("/src/") ||
+    url.pathname.includes("@vite") ||
+    url.pathname.includes("@react-refresh");
+  if (isDevelopmentAsset) return;
+
   event.respondWith(
     caches.match(event.request).then((cached) =>
       cached || fetch(event.request).then((response) => {

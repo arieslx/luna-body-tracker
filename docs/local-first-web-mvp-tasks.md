@@ -1,0 +1,189 @@
+# Tasks: Luna Local-first Web MVP
+
+Spec: [`docs/local-first-web-mvp-spec.md`](./local-first-web-mvp-spec.md)  
+Plan: [`docs/local-first-web-mvp-plan.md`](./local-first-web-mvp-plan.md)
+
+- [x] Task 1: Extend DailyRecord v1 module schemas compatibly
+  - Acceptance:
+    - Sleep accepts optional bedtime and wake time.
+    - Drinks, exercise entries, and supplements have typed schemas.
+    - Drinks and supplements have system module definitions.
+    - Existing v1 fixtures still parse.
+    - Unknown record-shaped modules remain valid.
+  - Verify:
+    - `pnpm --filter @luna-body-tracker/schema test`
+    - `pnpm --filter @luna-body-tracker/schema typecheck`
+  - Files:
+    - `packages/schema/src/daily-record.ts`
+    - `packages/schema/src/module-definition.ts`
+    - `packages/schema/src/schema.test.ts`
+
+- [x] Task 2: Implement the reusable storage package
+  - Acceptance:
+    - Package exports typed daily-record and settings operations.
+    - Production adapter uses native IndexedDB.
+    - Writes validate records.
+    - Batch writes use one transaction.
+    - In-memory adapter supports deterministic tests.
+  - Verify:
+    - `pnpm --filter @luna-body-tracker/storage typecheck`
+    - `pnpm --filter @luna-body-tracker/storage test`
+  - Files:
+    - `packages/storage/package.json`
+    - `packages/storage/tsconfig.json`
+    - `packages/storage/src/index.ts`
+    - `packages/storage/src/indexed-db.ts`
+    - `packages/storage/src/storage.test.ts`
+
+- [x] Task 3: Add Web date and record mapping utilities
+  - Acceptance:
+    - Local dates never use UTC truncation.
+    - Empty records are valid `DailyRecord` objects.
+    - Current UI modules map to canonical module values.
+    - Filled-state derivation uses canonical data.
+    - Updating known modules preserves unknown future modules.
+  - Verify:
+    - Web mapper unit tests.
+    - `pnpm --filter @luna-body-tracker/web build`
+  - Files:
+    - `apps/web/src/data/dates.ts`
+    - `apps/web/src/data/record-mapper.ts`
+    - `apps/web/src/data/record-mapper.test.ts`
+
+- [x] Task 4: Add the shared LunaRecordProvider
+  - Acceptance:
+    - Provider hydrates today and a seven-day range.
+    - Updates are optimistic and debounced to IndexedDB.
+    - Save status supports loading, saved, and error.
+    - Retry is available after failure.
+    - Weekly Focus persists as a setting.
+  - Verify:
+    - Provider integration tests or adapter-backed state tests.
+    - `pnpm --filter @luna-body-tracker/web build`
+  - Files:
+    - `apps/web/src/data/record-context.tsx`
+    - `apps/web/src/data/record-context.test.tsx`
+    - `apps/web/src/main.tsx`
+    - `apps/web/src/App.tsx`
+    - `apps/web/package.json`
+
+- [x] Task 5: Connect Mood, Notes, and Today filled state
+  - Acceptance:
+    - Mood selection persists and rehydrates.
+    - Notes persist and rehydrate.
+    - Anchor filled dots derive from canonical records.
+    - Mood animations remain transient and unchanged visually.
+  - Verify:
+    - `pnpm --filter @luna-body-tracker/web build`
+    - Manual reload check for Mood and Notes.
+  - Files:
+    - `apps/web/src/components/EmotionCluster.tsx`
+    - `apps/web/src/components/FeelingSection.tsx`
+    - `apps/web/src/components/QuietSections.tsx`
+    - `apps/web/src/pages/Today.tsx`
+
+- [x] Task 6: Connect Sleep and Food
+  - Acceptance:
+    - Sleep duration, bedtime, and wake time persist.
+    - Food categories and all four meal notes persist.
+    - Existing drag, keyboard, falling-food, and expanding-text interactions remain.
+  - Verify:
+    - `pnpm --filter @luna-body-tracker/web build`
+    - Manual reload check for Sleep and Food.
+  - Files:
+    - `apps/web/src/components/SleepSection.tsx`
+    - `apps/web/src/components/FoodSection.tsx`
+    - `apps/web/src/data/record-mapper.ts`
+    - `apps/web/src/data/record-mapper.test.ts`
+
+- [x] Task 7: Connect Drink and Movement
+  - Acceptance:
+    - Water count and selected drinks persist.
+    - Multiple cardio/strength entries and minutes persist.
+    - Water ripple and movement dial feedback remain local visual state.
+  - Verify:
+    - `pnpm --filter @luna-body-tracker/web build`
+    - Manual reload check for Drink and Movement.
+  - Files:
+    - `apps/web/src/components/DrinkSection.tsx`
+    - `apps/web/src/components/MovementSection.tsx`
+    - `apps/web/src/data/record-mapper.ts`
+    - `apps/web/src/data/record-mapper.test.ts`
+
+- [x] Task 8: Connect Body
+  - Acceptance:
+    - Poop count persists.
+    - Weight persists canonically in kg.
+    - kg/lb conversion remains display-only.
+    - Flush animation remains transient.
+  - Verify:
+    - `pnpm --filter @luna-body-tracker/web build`
+    - Manual reload and unit-switch check.
+  - Files:
+    - `apps/web/src/components/BodySection.tsx`
+    - `apps/web/src/data/record-mapper.ts`
+    - `apps/web/src/data/record-mapper.test.ts`
+
+- [x] Task 9: Replace Weeks demo data with real records
+  - Acceptance:
+    - Week range is today plus six preceding local dates.
+    - Empty days show no fabricated health data.
+    - Day cards derive summaries from canonical records.
+    - Weekly Focus persists.
+    - Day Detail edits canonical records, including Supplements.
+  - Verify:
+    - `pnpm --filter @luna-body-tracker/web build`
+    - Edit Today, inspect Weeks, edit Day Detail, return and compare.
+  - Files:
+    - `apps/web/src/pages/Weeks.tsx`
+    - `apps/web/src/pages/weekData.ts`
+    - `apps/web/src/components/WeekSummary.tsx`
+    - `apps/web/src/components/DaySummaryCard.tsx`
+    - `apps/web/src/components/DayDetail.tsx`
+
+- [x] Task 10: Connect real export and conflict-aware import
+  - Acceptance:
+    - Markdown and JSONL export all real stored records.
+    - Export filenames include the current date.
+    - JSONL output round-trips through the shared parser.
+    - Import previews new and conflicting dates.
+    - Invalid snapshots write nothing.
+    - Conflicts require explicit confirmation.
+  - Verify:
+    - Import/export unit tests.
+    - Manual export and conflict import flow.
+    - `pnpm --filter @luna-body-tracker/web build`
+  - Files:
+    - `apps/web/src/pages/Settings.tsx`
+    - `apps/web/src/data/import-export.ts`
+    - `apps/web/src/data/import-export.test.ts`
+    - `apps/web/src/data/record-context.tsx`
+
+- [x] Task 11: Add local-data and persistence states
+  - Acceptance:
+    - Calm hydration state avoids layout shift.
+    - Saved/error state is visible but unobtrusive.
+    - Retry works without dropping edits.
+    - Settings explains browser-data deletion, private browsing, and JSONL backup.
+  - Verify:
+    - Web build.
+    - Simulated adapter failure.
+    - Mobile visual check at 390 × 844.
+  - Files:
+    - `apps/web/src/App.tsx`
+    - `apps/web/src/pages/Settings.tsx`
+    - `apps/web/src/styles.css`
+
+- [x] Task 12: Verify and document the usable local-first MVP
+  - Acceptance:
+    - Schema, storage, Web, harness, and workspace tests pass.
+    - Full Today → reload → Weeks → Day Detail flow works.
+    - JSONL export/import restore works.
+    - Current PWA assets remain present.
+    - No login, backend, or sync dependency is introduced.
+  - Verify:
+    - All commands in the approved plan.
+    - Browser walkthrough at 390 × 844.
+  - Files:
+    - `docs/pr-local-first-web-mvp.md`
+    - `docs/local-first-web-mvp-tasks.md`

@@ -1,0 +1,44 @@
+:root {
+  --luna-illustration-paper: #f8f7f1;
+  --luna-illustration-ink: #344039;
+  --luna-illustration-green: #83a67d;
+}
+
+.luna-illustration {
+  display: inline-block;
+  flex: none;
+  overflow: visible;
+  vertical-align: middle;
+  transform-origin: center;
+  transition: opacity .28s ease, filter .28s ease, transform .28s ease;
+}
+
+.luna-illustration[data-state="muted"] .luna-illustration-art {
+  opacity: .38;
+  filter: saturate(.25);
+}
+
+.luna-illustration[data-state="selected"] { transform: scale(1.04); }
+.luna-illustration[data-state="completed"] .luna-illustration-art { opacity: .88; }
+.luna-state-mark { fill: var(--luna-illustration-green); }
+.luna-complete-mark circle { fill: var(--luna-illustration-green); }
+.luna-complete-mark path { fill: var(--luna-illustration-paper); }
+
+.luna-illustration.is-animated .luna-illustration-art {
+  animation: luna-soft-breathe 3.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.luna-story-page { padding: 28px; color: #344039; font-family: "Avenir Next", Avenir, sans-serif; }
+.luna-story-page h1 { margin: 0 0 8px; font-family: Georgia, serif; font-size: 30px; font-weight: 500; }
+.luna-story-page > p { max-width: 620px; margin: 0 0 28px; color: #777e78; font-family: Georgia, serif; line-height: 1.55; }
+.luna-story-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 14px; }
+.luna-story-item { display: grid; min-height: 156px; place-items: center; align-content: center; gap: 12px; border-radius: 22px; padding: 18px; background: rgba(255,255,255,.55); }
+.luna-story-item span { color: #747b75; font-size: 12px; }
+.luna-palette-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 12px; }
+.luna-palette-swatch { min-height: 112px; border-radius: 20px; padding: 14px; color: #344039; font-size: 12px; }
+.luna-size-row { display: flex; align-items: end; flex-wrap: wrap; gap: 24px; }
+.luna-size-sample { display: grid; justify-items: center; gap: 8px; color: #777e78; font-size: 11px; }
+
+@keyframes luna-soft-breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-1.5%) scale(1.015); } }
+@media (prefers-reduced-motion: reduce) { .luna-illustration.is-animated .luna-illustration-art { animation: none; } }

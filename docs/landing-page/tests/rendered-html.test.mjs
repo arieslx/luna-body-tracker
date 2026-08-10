@@ -32,6 +32,8 @@ test("server-renders the Luna landing page", async () => {
   assert.match(html, /<title>Luna Body Tracker｜属于你的身心记录<\/title>/i);
   assert.match(html, /听见身体的/);
   assert.match(html, /01 \/ WHAT LUNA DOES/);
+  assert.match(html, /luna-showcase-mood-sleep-food\.png/);
+  assert.match(html, /luna-showcase-water-movement-body\.png/);
   assert.match(html, /从今天的一条记录开始。/);
   assert.doesNotMatch(html, /02 \/ A QUIETER WAY/);
   assert.doesNotMatch(html, /class="principles"/);
