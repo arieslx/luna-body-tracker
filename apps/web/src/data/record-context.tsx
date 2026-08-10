@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { DailyRecord, ModuleValue } from "@luna-body-tracker/schema";
+import { parseDailyRecord, type DailyRecord, type ModuleValue } from "@luna-body-tracker/schema";
 import { createIndexedDbStorage, type LunaStorage } from "@luna-body-tracker/storage";
 import { createEmptyDailyRecord, updateRecordModule } from "./record-mapper";
 
@@ -19,6 +19,7 @@ type LunaRecordContextValue = {
 
 const LunaRecordContext = createContext<LunaRecordContextValue | null>(null);
 const WEEKLY_FOCUS_KEY = "weekly-focus";
+const RECORD_SYNC_CHANNEL = "luna-record-sync";
 const DEFAULT_WEEKLY_FOCUS: WeeklyMetric[] = ["mood", "food", "movement"];
 
 export function LunaRecordProvider({ children, storage: suppliedStorage }: { children: ReactNode; storage?: LunaStorage }) {
@@ -28,8 +29,31 @@ export function LunaRecordProvider({ children, storage: suppliedStorage }: { chi
   const [status, setStatus] = useState<SaveStatus>("loading");
   const [weeklyFocus, setWeeklyFocusState] = useState<WeeklyMetric[]>(DEFAULT_WEEKLY_FOCUS);
   const pending = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const syncChannel = useRef<BroadcastChannel | null>(null);
 
   useEffect(() => { recordsRef.current = records; }, [records]);
+  useEffect(() => {
+    if (typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel(RECORD_SYNC_CHANNEL);
+    syncChannel.current = channel;
+    channel.onmessage = (event) => {
+      try {
+        const incoming = parseDailyRecord(event.data);
+        const current = recordsRef.current.get(incoming.date);
+        if (current && current.meta.updatedAt > incoming.meta.updatedAt) return;
+        const next = new Map(recordsRef.current);
+        next.set(incoming.date, incoming);
+        recordsRef.current = next;
+        setRecords(next);
+      } catch {
+        // Ignore malformed messages from unrelated or outdated clients.
+      }
+    };
+    return () => {
+      syncChannel.current = null;
+      channel.close();
+    };
+  }, []);
 
   const hydrate = useCallback(async () => {
     setStatus("loading");
@@ -75,6 +99,7 @@ export function LunaRecordProvider({ children, storage: suppliedStorage }: { chi
     nextRecords.set(date, next);
     recordsRef.current = nextRecords;
     setRecords(nextRecords);
+    syncChannel.current?.postMessage(next);
     scheduleSave(next);
   }, [scheduleSave]);
 
@@ -82,7 +107,10 @@ export function LunaRecordProvider({ children, storage: suppliedStorage }: { chi
     await storage.putDailyRecords(nextRecords);
     setRecords((current) => {
       const next = new Map(current);
-      nextRecords.forEach((record) => next.set(record.date, record));
+      nextRecords.forEach((record) => {
+        next.set(record.date, record);
+        syncChannel.current?.postMessage(record);
+      });
       recordsRef.current = next;
       return next;
     });

@@ -29,4 +29,9 @@ describe("record mapper", () => {
     record = updateRecordModule(record, "note", { text: "A quiet day." });
     expect([...filledSections(record)]).toEqual(["feeling", "notes"]);
   });
+
+  it("does not mark Notes as filled when its text is empty", () => {
+    const record = updateRecordModule(createEmptyDailyRecord("2026-08-10"), "note", { text: "   " });
+    expect(filledSections(record).has("notes")).toBe(false);
+  });
 });

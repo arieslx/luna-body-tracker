@@ -1,4 +1,4 @@
-import { AngryIllustration, CalmIllustration, EmoIllustration, HappyIllustration, SadIllustration, TiredIllustration } from "@luna-body-tracker/ui";
+import { AngryIllustration, AnxiousIllustration, CalmIllustration, ConfusedIllustration, EmoIllustration, ExcitedIllustration, HappyIllustration, LovedIllustration, SadIllustration, SleepyIllustration, TiredIllustration } from "@luna-body-tracker/ui";
 import type { MoodId, WeekDay } from "../pages/weekData";
 import { mealOrder } from "../pages/weekData";
 import { useI18n } from "../i18n";
@@ -10,6 +10,11 @@ const moods = [
   { id: "sad", Illustration: SadIllustration },
   { id: "emo", Illustration: EmoIllustration },
   { id: "angry", Illustration: AngryIllustration },
+  { id: "excited", Illustration: ExcitedIllustration },
+  { id: "anxious", Illustration: AnxiousIllustration },
+  { id: "sleepy", Illustration: SleepyIllustration },
+  { id: "loved", Illustration: LovedIllustration },
+  { id: "confused", Illustration: ConfusedIllustration },
 ] as const;
 
 export function DayDetail({ day, onChange, onBack }: { day: WeekDay; onChange: (day: WeekDay) => void; onBack: () => void }) {

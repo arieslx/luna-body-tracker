@@ -1,3 +1,5 @@
+import { useI18n } from "../i18n";
+
 type QuietSectionProps = { id: string; kicker: string; title: string; prompt: string; children: React.ReactNode };
 
 function QuietSection({ id, kicker, title, prompt, children }: QuietSectionProps) {
@@ -12,7 +14,8 @@ function QuietSection({ id, kicker, title, prompt, children }: QuietSectionProps
 }
 
 export function NotesSection({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return <QuietSection id="notes" kicker="leave it here" title="Notes" prompt="A thought, a detail, or nothing at all.">
-    <textarea className="notes-input" aria-label="Notes for today" onChange={(event) => onChange(event.target.value)} placeholder="Today felt…" rows={4} value={value} />
+  const { t } = useI18n();
+  return <QuietSection id="notes" kicker={t("today.notes.kicker")} title={t("today.notes.title")} prompt={t("today.notes.prompt")}>
+    <textarea className="notes-input" aria-label={t("today.notes.label")} onChange={(event) => onChange(event.target.value)} placeholder={t("today.notes.placeholder")} rows={4} value={value} />
   </QuietSection>;
 }

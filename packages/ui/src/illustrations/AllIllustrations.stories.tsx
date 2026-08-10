@@ -3,12 +3,13 @@ import { PoopIllustration, ToiletIllustration, WeightIllustration } from "./body
 import { AddIllustration, CompletedIllustration, EmptyIllustration, SelectedIllustration } from "./common";
 import { AmericanoIllustration, LatteIllustration, OtherDrinkIllustration, WaterIllustration, WineIllustration } from "./drinks";
 import { EggIllustration, FruitIllustration, MeatIllustration, MilkIllustration, OilIllustration, OtherFoodIllustration, SnackIllustration, StapleIllustration, VegetableIllustration } from "./food";
-import { AngryIllustration, CalmIllustration, EmoIllustration, HappyIllustration, SadIllustration, TiredIllustration } from "./mood";
+import { AngryIllustration, AnxiousIllustration, CalmIllustration, ConfusedIllustration, EmoIllustration, ExcitedIllustration, HappyIllustration, LovedIllustration, SadIllustration, SleepyIllustration, TiredIllustration } from "./mood";
 import { IllustrationGallery } from "./story-helpers";
 import { BowlIllustration, ForkIllustration, KnifeIllustration, PlaceSettingIllustration, PlateIllustration } from "./tableware";
 
 const entries = [
   { name: "Calm", component: CalmIllustration }, { name: "Happy", component: HappyIllustration }, { name: "Tired", component: TiredIllustration }, { name: "Sad", component: SadIllustration }, { name: "Emo", component: EmoIllustration }, { name: "Angry", component: AngryIllustration },
+  { name: "Excited", component: ExcitedIllustration }, { name: "Anxious", component: AnxiousIllustration }, { name: "Sleepy", component: SleepyIllustration }, { name: "Loved", component: LovedIllustration }, { name: "Confused", component: ConfusedIllustration },
   { name: "Vegetable", component: VegetableIllustration }, { name: "Meat", component: MeatIllustration }, { name: "Rice", component: StapleIllustration }, { name: "Milk", component: MilkIllustration }, { name: "Egg", component: EggIllustration }, { name: "Oil", component: OilIllustration }, { name: "Fruit", component: FruitIllustration }, { name: "Snack", component: SnackIllustration }, { name: "Other food", component: OtherFoodIllustration },
   { name: "Water", component: WaterIllustration }, { name: "Iced Americano", component: AmericanoIllustration }, { name: "Latte", component: LatteIllustration }, { name: "Wine", component: WineIllustration }, { name: "Other drink", component: OtherDrinkIllustration },
   { name: "Oval plate set", component: PlaceSettingIllustration }, { name: "Oval plate", component: PlateIllustration }, { name: "Bowl", component: BowlIllustration }, { name: "Fork", component: ForkIllustration }, { name: "Knife", component: KnifeIllustration },

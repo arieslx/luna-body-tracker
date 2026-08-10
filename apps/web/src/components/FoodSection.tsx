@@ -11,24 +11,25 @@ import {
   StapleIllustration,
   VegetableIllustration,
 } from "@luna-body-tracker/ui";
+import { useI18n, type MessageKey } from "../i18n";
 
 const foods = [
-  { id: "vegetable", label: "蔬菜", color: "#78aa77" },
-  { id: "meat", label: "肉类", color: "#e58069" },
-  { id: "staple", label: "主食", color: "#e8bd67" },
-  { id: "milk", label: "牛奶", color: "#a7b7c7" },
-  { id: "egg", label: "鸡蛋", color: "#efb54d" },
-  { id: "oil", label: "油", color: "#d8b94e" },
-  { id: "fruit", label: "水果", color: "#e78f76" },
-  { id: "snack", label: "零食", color: "#c5a2c5" },
-  { id: "other", label: "其他", color: "#a9aaa1" },
+  { id: "vegetable", labelKey: "today.food.vegetable", color: "#78aa77" },
+  { id: "meat", labelKey: "today.food.meat", color: "#e58069" },
+  { id: "staple", labelKey: "today.food.staple", color: "#e8bd67" },
+  { id: "milk", labelKey: "today.food.milk", color: "#a7b7c7" },
+  { id: "egg", labelKey: "today.food.egg", color: "#efb54d" },
+  { id: "oil", labelKey: "today.food.oil", color: "#d8b94e" },
+  { id: "fruit", labelKey: "today.food.fruit", color: "#e78f76" },
+  { id: "snack", labelKey: "today.food.snack", color: "#c5a2c5" },
+  { id: "other", labelKey: "today.food.other", color: "#a9aaa1" },
 ] as const;
 
 const meals = [
-  { id: "breakfast", label: "Breakfast", placeholder: "egg, coffee, or whatever you remember…" },
-  { id: "lunch", label: "Lunch", placeholder: "a word or a little note about lunch…" },
-  { id: "dinner", label: "Dinner", placeholder: "what dinner felt like today…" },
-  { id: "snack", label: "Snack", placeholder: "anything in between…" },
+  { id: "breakfast", labelKey: "meal.breakfast" },
+  { id: "lunch", labelKey: "meal.lunch" },
+  { id: "dinner", labelKey: "meal.dinner" },
+  { id: "snack", labelKey: "meal.snack" },
 ] as const;
 
 function FoodIcon({ id }: { id: (typeof foods)[number]["id"] }) {
@@ -52,6 +53,7 @@ export function FoodSection({ selected, mealNotes, onSelectedChange, onMealNotes
   onSelectedChange: (value: string[]) => void;
   onMealNotesChange: (value: Record<string, string>) => void;
 }) {
+  const { t } = useI18n();
   const [falling, setFalling] = useState<{ id: number; food: (typeof foods)[number] } | null>(null);
 
   function addFood(food: (typeof foods)[number]) {
@@ -62,11 +64,11 @@ export function FoodSection({ selected, mealNotes, onSelectedChange, onMealNotes
   return (
     <section className="today-section food-section" id="food" data-section="food">
       <header className="food-heading">
-        <p className="section-kicker">nourishment</p>
-        <h2>What fed you?</h2>
+        <p className="section-kicker">{t("today.food.kicker")}</p>
+        <h2>{t("today.food.title")}</h2>
       </header>
 
-      <div className="food-cloud" aria-label="今天吃过的食物种类">
+      <div className="food-cloud" aria-label={t("today.food.types")}>
         {foods.map((food, index) => (
           <button
             aria-pressed={selected.includes(food.id)}
@@ -77,7 +79,7 @@ export function FoodSection({ selected, mealNotes, onSelectedChange, onMealNotes
             type="button"
           >
             <FoodIcon id={food.id} />
-            <span className="food-label">{food.label}</span>
+            <span className="food-label">{t(food.labelKey as MessageKey)}</span>
           </button>
         ))}
       </div>
@@ -95,22 +97,22 @@ export function FoodSection({ selected, mealNotes, onSelectedChange, onMealNotes
             })}
           </div>
         </div>
-        <p>{selected.length === 0 ? "点一点，把今天吃过的放进盘子里" : selected.map((id) => foods.find((food) => food.id === id)?.label).filter(Boolean).join(" · ")}</p>
-        <small className="plate-guidance">如果每餐能吃到一拳主食、两拳非淀粉蔬菜、1.5 拳肉类就好了。</small>
+        <p>{selected.length === 0 ? t("today.food.emptyPlate") : selected.map((id) => foods.find((food) => food.id === id)).filter((food): food is (typeof foods)[number] => Boolean(food)).map((food) => t(food.labelKey as MessageKey)).join(" · ")}</p>
+        <small className="plate-guidance">{t("today.food.guidance")}</small>
       </div>
 
       <div className="meal-notes">
         {meals.map((meal) => (
           <label key={meal.id}>
-            <span>{meal.label}</span>
+            <span>{t(meal.labelKey)}</span>
             <textarea
-              aria-label={meal.label}
+              aria-label={t(meal.labelKey)}
               onChange={(event) => onMealNotesChange({ ...mealNotes, [meal.id]: event.target.value })}
               onInput={(event) => {
                 event.currentTarget.style.height = "auto";
                 event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
               }}
-              placeholder={meal.placeholder}
+              placeholder={t("detail.mealPlaceholder")}
               rows={1}
               value={mealNotes[meal.id] ?? ""}
             />

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Ellipsis } from "lucide-react";
 import { DayDetail } from "../components/DayDetail";
 import { WeeklyPreference } from "../components/WeeklyPreference";
 import { WeekSummary } from "../components/WeekSummary";
@@ -40,7 +41,7 @@ export function Weeks() {
 
   return (
     <section className="weeks-page">
-      <button className="weekly-focus-trigger" aria-label={t("week.focusSettings")} onClick={() => setShowPreference(true)} type="button"><span>{t("week.focus")}</span>•••</button>
+      <button className="weekly-focus-trigger" aria-label={t("week.focusSettings")} onClick={() => setShowPreference(true)} type="button"><span>{t("week.focus")}</span><Ellipsis aria-hidden="true" size={17} strokeWidth={1.8} /></button>
       <WeekSummary days={days} onOpenDay={setSelectedDay} visibleMetrics={preference.visibleMetrics} />
       {showPreference ? <><button className="weekly-preference-scrim" aria-label={t("week.closeFocus")} onClick={() => setShowPreference(false)} type="button" /><WeeklyPreference onChange={(value) => setWeeklyFocus(value.visibleMetrics)} onClose={() => setShowPreference(false)} value={preference} /></> : null}
     </section>

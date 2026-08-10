@@ -3,7 +3,7 @@ import { BodySection } from "../components/BodySection";
 import { DrinkSection } from "../components/DrinkSection";
 import { FeelingSection } from "../components/FeelingSection";
 import { FoodSection } from "../components/FoodSection";
-import { anchors, LifeAnchor, type SectionId } from "../components/LifeAnchor";
+import { LifeAnchor, type SectionId } from "../components/LifeAnchor";
 import { MovementSection, type ExerciseEntry } from "../components/MovementSection";
 import { NotesSection } from "../components/QuietSections";
 import { SleepSection } from "../components/SleepSection";
@@ -24,14 +24,11 @@ type ExerciseValue = { entries: ExerciseEntry[] };
 
 export function Today({ onOpenSettings }: { onOpenSettings: () => void }) {
   const [active, setActive] = useState<SectionId>("feeling");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [transientFilled, setTransientFilled] = useState<Set<SectionId>>(() => new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
   const { getRecord, updateModule } = useLunaRecords();
   const today = toLocalDateKey();
   const record = getRecord(today);
-  const filled = new Set([...filledSections(record), ...transientFilled]);
+  const filled = filledSections(record);
   const mood = moduleValue<MoodValue>(record, "mood")?.value;
   const note = moduleValue<TextValue>(record, "note")?.text ?? "";
   const sleep = moduleValue<SleepValue>(record, "sleep");
@@ -63,35 +60,11 @@ export function Today({ onOpenSettings }: { onOpenSettings: () => void }) {
     if (root && target) root.scrollTo({ top: (target as HTMLElement).offsetTop, behavior: "smooth" });
   }
 
-  function submitSearch(event: React.FormEvent) {
-    event.preventDefault();
-    const query = search.trim().toLowerCase();
-    const match = anchors.find((item) => item.label.toLowerCase().includes(query) || item.id.includes(query));
-    if (match) {
-      scrollTo(match.id);
-      setSearchOpen(false);
-      setSearch("");
-    }
-  }
-
-  function markFilled(id: SectionId, value: boolean) {
-    setTransientFilled((current) => {
-      const next = new Set(current);
-      if (value) next.add(id); else next.delete(id);
-      return next;
-    });
-  }
-
   return (
     <div className="today-page">
       <div className="today-top-actions">
-        <button className="today-more-button" aria-label="打开设置" onClick={onOpenSettings} type="button"><i /><i /><i /></button>
-        <button className="today-search-button" aria-label="搜索今天的状态" aria-expanded={searchOpen} onClick={() => setSearchOpen((open) => !open)} type="button"><span /></button>
+        <button className="today-more-button" aria-label="打开设置" onClick={onOpenSettings} type="button"><span className="site-logo" aria-hidden="true">◐</span></button>
       </div>
-      {searchOpen && <form className="today-search-popover" onSubmit={submitSearch}>
-        <input aria-label="搜索区域" autoFocus onChange={(event) => setSearch(event.target.value)} placeholder="Mood, Sleep, Food…" value={search} />
-        <button type="submit">Go</button>
-      </form>}
       <LifeAnchor active={active} filled={filled} onSelect={scrollTo} />
       <div className="today-scroll" ref={scrollRef}>
         <FeelingSection value={mood} onChange={(value) => updateModule(today, "mood", { value })} />

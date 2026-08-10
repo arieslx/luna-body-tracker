@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useI18n } from "../i18n";
 
 const hourTimes = ["13", "12", "11", "10", "09", "08", "07", "06", "05", "04", "03", "02", "01", "00", "23", "22", "21", "20", "19"];
 const times = hourTimes.flatMap((hour, index) => {
@@ -48,6 +49,7 @@ function indexForTime(value: string | undefined, fallback: number) {
 }
 
 export function SleepSection({ value, onChange }: { value?: SleepValue; onChange: (value: SleepValue) => void }) {
+  const { t } = useI18n();
   const bedtime = indexForTime(value?.bedtime, 28);
   const wakeTime = indexForTime(value?.wakeTime, 12);
   const dialRef = useRef<HTMLDivElement>(null);
@@ -98,9 +100,9 @@ export function SleepSection({ value, onChange }: { value?: SleepValue; onChange
   return (
     <section className="today-section sleep-section" id="sleep" data-section="sleep">
       <header className="sleep-heading">
-        <p className="section-kicker">last night</p>
-        <h2>Rest</h2>
-        <p>沿着月亮的弧线，<br />轻轻记下睡眠。</p>
+        <p className="section-kicker">{t("today.sleep.kicker")}</p>
+        <h2>{t("today.sleep.title")}</h2>
+        <p>{t("today.sleep.prompt").split("\n").map((line, index) => <span key={line}>{index > 0 ? <br /> : null}{line}</span>)}</p>
       </header>
 
       <div className="sleep-dial" ref={dialRef}>
@@ -117,15 +119,15 @@ export function SleepSection({ value, onChange }: { value?: SleepValue; onChange
         })}
 
         <div className="sleep-reading" aria-live="polite">
-          <small>sleep</small>
+          <small>{t("today.sleep.reading")}</small>
           <strong>{formatTime(bedtime)}</strong>
           <span>—</span>
           <strong>{formatTime(wakeTime)}</strong>
-          <em>{duration} 小时</em>
+          <em>{t("today.sleep.duration", { hours: duration })}</em>
         </div>
 
         <button
-          aria-label={`入睡时间 ${formatTime(bedtime)}`}
+          aria-label={t("today.sleep.bedtime", { time: formatTime(bedtime) })}
           className="sleep-handle sleep-handle-bed"
           onKeyDown={(event) => {
             if (event.key === "ArrowUp") commit(Math.max(wakeTime + 1, bedtime - 1), wakeTime);
@@ -137,7 +139,7 @@ export function SleepSection({ value, onChange }: { value?: SleepValue; onChange
           type="button"
         ><span className="moon-mark" /></button>
         <button
-          aria-label={`醒来时间 ${formatTime(wakeTime)}`}
+          aria-label={t("today.sleep.wakeTime", { time: formatTime(wakeTime) })}
           className="sleep-handle sleep-handle-wake"
           onKeyDown={(event) => {
             if (event.key === "ArrowUp") commit(bedtime, Math.max(0, wakeTime - 1));

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PoopIllustration, ToiletIllustration } from "@luna-body-tracker/ui";
+import { useI18n } from "../i18n";
 
 type Unit = "kg" | "lb";
 
@@ -9,6 +10,7 @@ export function BodySection({ poopCount, weightKg, onPoopCountChange, onWeightKg
   onPoopCountChange: (value: number) => void;
   onWeightKgChange: (value: number | undefined) => void;
 }) {
+  const { t } = useI18n();
   const [dropKey, setDropKey] = useState(0);
   const [unit, setUnit] = useState<Unit>("kg");
   const shownWeight = unit === "kg" ? weightKg : weightKg === undefined ? undefined : weightKg * 2.20462;
@@ -36,8 +38,8 @@ export function BodySection({ poopCount, weightKg, onPoopCountChange, onWeightKg
   return (
     <section className="today-section body-section" id="body" data-section="body">
       <header className="body-heading">
-        <p className="section-kicker">body care</p>
-        <h2>Body</h2>
+        <p className="section-kicker">{t("today.body.kicker")}</p>
+        <h2>{t("today.body.title")}</h2>
       </header>
 
       <div className="poop-area">
@@ -54,15 +56,15 @@ export function BodySection({ poopCount, weightKg, onPoopCountChange, onWeightKg
 
       <div className="weight-area">
         <div>
-          <p>体重</p>
-          <small>轻触数字即可修改</small>
+          <p>{t("today.body.weight")}</p>
+          <small>{t("today.body.weightHint")}</small>
         </div>
         <label className="weight-input">
           <input aria-label={`体重，单位${unit}`} inputMode="decimal" onChange={(event) => updateWeight(event.target.value)} placeholder="—" step="0.1" type="number" value={shownWeight === undefined ? "" : shownWeight.toFixed(1)} />
         </label>
         <div className="unit-switch" aria-label="体重单位">
-          <button className={unit === "kg" ? "is-active" : ""} onClick={() => setUnit("kg")} type="button">kg</button>
-          <button className={unit === "lb" ? "is-active" : ""} onClick={() => setUnit("lb")} type="button">lb</button>
+          <button className={unit === "kg" ? "is-active" : ""} onClick={() => setUnit("kg")} type="button">{t("today.body.kg")}</button>
+          <button className={unit === "lb" ? "is-active" : ""} onClick={() => setUnit("lb")} type="button">{t("today.body.lb")}</button>
         </div>
       </div>
     </section>

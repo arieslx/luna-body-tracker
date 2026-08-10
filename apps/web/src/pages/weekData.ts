@@ -3,7 +3,7 @@ import type { WeeklyMetric } from "../data/record-context";
 import { moduleValue } from "../data/record-mapper";
 import type { TFunction } from "../i18n";
 
-export type MoodId = "calm" | "happy" | "tired" | "sad" | "emo" | "angry";
+export type MoodId = "calm" | "happy" | "tired" | "sad" | "emo" | "angry" | "excited" | "anxious" | "sleepy" | "loved" | "confused";
 export type MealId = "breakfast" | "lunch" | "dinner" | "snack";
 
 export type WeekDay = {

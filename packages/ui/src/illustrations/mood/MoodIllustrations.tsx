@@ -44,3 +44,23 @@ export function EmoIllustration(props: IllustrationProps) {
 export function AngryIllustration(props: IllustrationProps) {
   return <MoodBase title="Angry" color={c.coral} shape="M8 32C8 17 17 8 32 7c15 0 25 10 25 25 0 16-10 25-25 25S8 48 8 32Z" {...props}><path {...faceLine} d="m21 27 6 2m16-2-6 2M28.5 41q3.5-2 7 0" /><circle cx="26" cy="33" r="1.2" fill={c.ink} /><circle cx="38" cy="33" r="1.2" fill={c.ink} /></MoodBase>;
 }
+
+export function ExcitedIllustration(props: IllustrationProps) {
+  return <MoodBase title="Excited" color={c.orange} shape="M7 31C8 16 18 7 33 8c15 0 24 10 24 25 0 15-10 24-25 24C16 57 7 47 7 31Z" {...props}><path {...faceLine} d="m20 27 5-3 4 3m6 0 4-3 5 3M25 37q7 11 14 0Z" /><circle cx="23.5" cy="27" r="1.1" fill={c.ink} /><circle cx="40.5" cy="27" r="1.1" fill={c.ink} /></MoodBase>;
+}
+
+export function AnxiousIllustration(props: IllustrationProps) {
+  return <MoodBase title="Anxious" color={c.cream} shape="M8 32C8 17 18 8 32 7c15 0 25 9 25 25 0 15-9 25-25 25S8 48 8 32Z" {...props}><path {...faceLine} d="m20 26 6-2m12 0 6 2M26 41l3-2 3 3 3-3 3 2" /><circle cx="25" cy="31" r="1.5" fill={c.ink} /><circle cx="39" cy="31" r="1.5" fill={c.ink} /><path fill={c.blueLight} d="M46 30c2.4 3.1 2.4 5.5 0 6.5-2.4-1-2.4-3.4 0-6.5Z" /></MoodBase>;
+}
+
+export function SleepyIllustration(props: IllustrationProps) {
+  return <MoodBase title="Sleepy" color={c.blueLight} shape="M7 33C7 18 17 8 32 8c16 0 25 9 25 24 0 16-9 25-25 25S7 49 7 33Z" {...props}><path {...faceLine} d="M20 30q4 3 8 0m8 0q4 3 8 0M28 41q4-3 8 0" /><path {...faceLine} opacity=".55" d="m45 18 5-5h-5m5 5h5l-5 5" /></MoodBase>;
+}
+
+export function LovedIllustration(props: IllustrationProps) {
+  return <MoodBase title="Loved" color={c.rose} shape="M8 31C8 16 18 7 33 7c15 0 24 10 24 25 0 16-10 25-25 25S7 47 8 31Z" {...props}><path fill={c.wine} d="M20 27c0-3 4-4 6-1 2-3 6-2 6 1 0 3-3 5-6 8-3-3-6-5-6-8Zm14 0c0-3 4-4 6-1 2-3 6-2 6 1 0 3-3 5-6 8-3-3-6-5-6-8Z" /><path {...faceLine} d="M27 40q5 6 10 0" /></MoodBase>;
+}
+
+export function ConfusedIllustration(props: IllustrationProps) {
+  return <MoodBase title="Confused" color={c.oat} shape="M7 31C8 16 18 8 32 7c16 0 25 9 25 25 0 15-9 25-24 25C17 58 7 47 7 31Z" {...props}><path {...faceLine} d="m20 26 6-2m12 2 6 2M27 42c3-4 7 3 11-1" /><circle cx="25" cy="31" r="1.4" fill={c.ink} /><circle cx="40" cy="32" r="1.4" fill={c.ink} /><path {...faceLine} opacity=".58" d="M48 18c3-3 7-1 7 2 0 3-4 3-4 6m0 4h.1" /></MoodBase>;
+}

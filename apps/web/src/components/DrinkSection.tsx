@@ -6,12 +6,13 @@ import {
   WaterIllustration,
   WineIllustration,
 } from "@luna-body-tracker/ui";
+import { useI18n, type MessageKey } from "../i18n";
 
 const drinks = [
-  { id: "americano", label: "冰美式" },
-  { id: "latte", label: "拿铁" },
-  { id: "wine", label: "酒" },
-  { id: "other", label: "其他" },
+  { id: "americano", labelKey: "today.drink.americano" },
+  { id: "latte", labelKey: "today.drink.latte" },
+  { id: "wine", labelKey: "today.drink.wine" },
+  { id: "other", labelKey: "today.drink.otherOption" },
 ];
 
 function DrinkIcon({ id }: { id: string }) {
@@ -30,6 +31,7 @@ export function DrinkSection({ water, selectedDrinks, onWaterChange, onSelectedD
   onWaterChange: (value: number) => void;
   onSelectedDrinksChange: (value: string[]) => void;
 }) {
+  const { t } = useI18n();
   const [ripple, setRipple] = useState(0);
   const [summaryOpen, setSummaryOpen] = useState(false);
 
@@ -42,15 +44,15 @@ export function DrinkSection({ water, selectedDrinks, onWaterChange, onSelectedD
     onSelectedDrinksChange(selectedDrinks.includes(id) ? selectedDrinks.filter((item) => item !== id) : [...selectedDrinks, id]);
   }
 
-  const selectedDrinkLabels = drinks.filter((drink) => selectedDrinks.includes(drink.id)).map((drink) => drink.label);
-  const waterWords = [water > 0 ? `喝了 ${water} 杯水` : "", ...selectedDrinkLabels].filter(Boolean).join(" · ") || "还没有记录";
+  const selectedDrinkLabels = drinks.filter((drink) => selectedDrinks.includes(drink.id)).map((drink) => t(drink.labelKey as MessageKey));
+  const waterWords = [water > 0 ? t("today.drink.waterSummary", { count: water }) : "", ...selectedDrinkLabels].filter(Boolean).join(" · ") || t("today.drink.empty");
   const waterTop = 341 - water * 36.55;
 
   return (
     <section className="today-section drink-section" id="drink" data-section="drink">
       <header className="drink-heading">
-        <p className="section-kicker">a soft refill</p>
-        <h2>Water</h2>
+        <p className="section-kicker">{t("today.drink.kicker")}</p>
+        <h2>{t("today.drink.title")}</h2>
       </header>
 
       <div className="water-cup-wrap">
@@ -77,12 +79,12 @@ export function DrinkSection({ water, selectedDrinks, onWaterChange, onSelectedD
       </div>
 
       <div className="other-drinks">
-        <div className="other-drinks-title"><span>其他饮品</span><small>可多选</small></div>
+        <div className="other-drinks-title"><span>{t("today.drink.other")}</span><small>{t("today.drink.multiple")}</small></div>
         <div className="drink-options">
           {drinks.map((drink) => (
             <button className={selectedDrinks.includes(drink.id) ? "is-selected" : ""} key={drink.id} onClick={() => toggleDrink(drink.id)} type="button">
               <DrinkIcon id={drink.id} />
-              {drink.label}
+              {t(drink.labelKey as MessageKey)}
             </button>
           ))}
         </div>
