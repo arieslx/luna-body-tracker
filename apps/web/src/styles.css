@@ -246,10 +246,18 @@ textarea:focus { border-color: var(--green); }
 .export-note { margin-top: 16px; color: #a7aaa4; font-family: Georgia, serif; font-size: 9px; }
 .weeks-page { position: relative; height: calc(100% - 74px); overflow: auto; background: var(--paper); scrollbar-width: none; }
 .weeks-page::-webkit-scrollbar, .day-detail::-webkit-scrollbar { display: none; }
-.weekly-focus-trigger { position: absolute; z-index: 6; top: 11px; right: 15px; display: flex; align-items: center; gap: 7px; border: 0; padding: 8px; background: rgba(248,247,241,.84); color: #777d77; cursor: pointer; }
+.week-calendar-toolbar { position: sticky; z-index: 8; top: 0; display: grid; gap: 8px; padding: 10px 14px 8px 68px; background: rgba(250,248,241,.94); backdrop-filter: blur(8px); }
+.week-calendar-navigation { display: grid; grid-template-columns: 30px minmax(0,1fr) 30px; align-items: center; gap: 5px; }
+.week-calendar-navigation > button { display: grid; width: 30px; height: 30px; place-items: center; border: 0; border-radius: 50%; background: rgba(216,226,210,.42); color: #6d786b; cursor: pointer; }
+.week-date-control { position: relative; display: flex; min-width: 0; align-items: center; justify-content: center; gap: 7px; color: #545b53; font-family: Georgia, serif; font-size: 13px; white-space: nowrap; cursor: pointer; }
+.week-date-control input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.week-toolbar-actions { display: flex; align-items: center; justify-content: space-between; min-height: 24px; }
+.current-week-label,.return-current-week { color: #789274; font-size: 9px; letter-spacing: .08em; }
+.return-current-week { border: 0; border-radius: 999px; padding: 5px 8px; background: rgba(232,201,106,.18); cursor: pointer; }
+.weekly-focus-trigger { display: flex; align-items: center; gap: 7px; border: 0; padding: 3px 0; background: transparent; color: #777d77; cursor: pointer; }
 .weekly-focus-trigger span { font-size: 12px; }
-.week-summary-layout { position: relative; min-height: 1018px; padding: 38px 0 0; background: #faf8f1; }
-.timeline-spine { position: absolute; z-index: 0; left: 0; top: 38px; width: 56px; height: 980px; overflow: visible; fill: none; }
+.week-summary-layout { position: relative; min-height: 1018px; padding: 4px 0 0; background: #faf8f1; }
+.timeline-spine { position: absolute; z-index: 0; left: 0; top: 4px; width: 56px; height: 980px; overflow: visible; fill: none; }
 .timeline-spine path { stroke: #d8e2d2; stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .week-journal-row { position: relative; z-index: 1; display: grid; grid-template-columns: 56px minmax(0,1fr); min-height: 140px; padding: 8px 12px 8px 0; }
 .week-timeline-node { position: relative; display: flex; min-width: 0; align-items: center; justify-content: center; color: #4a4b45; }

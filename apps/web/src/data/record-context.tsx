@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { parseDailyRecord, type DailyRecord, type ModuleValue } from "@luna-body-tracker/schema";
 import { createIndexedDbStorage, type LunaStorage } from "@luna-body-tracker/storage";
 import { createEmptyDailyRecord, updateRecordModule } from "./record-mapper";
+import { migrateLegacyRecord } from "./record-migration";
 
 export type SaveStatus = "loading" | "saved" | "error";
 export type WeeklyMetric = "mood" | "food" | "sleep" | "movement" | "water" | "body" | "notes";
@@ -62,7 +63,10 @@ export function LunaRecordProvider({ children, storage: suppliedStorage }: { chi
         storage.listDailyRecords(),
         storage.getSetting<WeeklyMetric[]>(WEEKLY_FOCUS_KEY)
       ]);
-      const hydratedRecords = new Map(storedRecords.map((record) => [record.date, record]));
+      const hydratedRecords = new Map(storedRecords.map((record) => {
+        const migrated = migrateLegacyRecord(record);
+        return [migrated.date, migrated] as const;
+      }));
       recordsRef.current.forEach((record, date) => hydratedRecords.set(date, record));
       recordsRef.current = hydratedRecords;
       setRecords(hydratedRecords);
@@ -104,10 +108,11 @@ export function LunaRecordProvider({ children, storage: suppliedStorage }: { chi
   }, [scheduleSave]);
 
   const replaceRecords = useCallback(async (nextRecords: DailyRecord[]) => {
-    await storage.putDailyRecords(nextRecords);
+    const migratedRecords = nextRecords.map((record) => migrateLegacyRecord(record));
+    await storage.putDailyRecords(migratedRecords);
     setRecords((current) => {
       const next = new Map(current);
-      nextRecords.forEach((record) => {
+      migratedRecords.forEach((record) => {
         next.set(record.date, record);
         syncChannel.current?.postMessage(record);
       });
