@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PoopIllustration, ToiletIllustration } from "@luna-body-tracker/ui";
 import { useI18n } from "../i18n";
 
@@ -14,6 +14,12 @@ export function BodySection({ poopCount, weightKg, onPoopCountChange, onWeightKg
   const [dropKey, setDropKey] = useState(0);
   const [unit, setUnit] = useState<Unit>("kg");
   const shownWeight = unit === "kg" ? weightKg : weightKg === undefined ? undefined : weightKg * 2.20462;
+  const [weightDraft, setWeightDraft] = useState(() => shownWeight === undefined ? "" : shownWeight.toFixed(1));
+  const editingWeight = useRef(false);
+
+  useEffect(() => {
+    if (!editingWeight.current) setWeightDraft(shownWeight === undefined ? "" : shownWeight.toFixed(1));
+  }, [shownWeight]);
 
   function flush() {
     onPoopCountChange(Math.min(3, poopCount + 1));
@@ -26,6 +32,7 @@ export function BodySection({ poopCount, weightKg, onPoopCountChange, onWeightKg
   }
 
   function updateWeight(value: string) {
+    setWeightDraft(value);
     if (!value.trim()) {
       onWeightKgChange(undefined);
       return;
@@ -60,7 +67,20 @@ export function BodySection({ poopCount, weightKg, onPoopCountChange, onWeightKg
           <small>{t("today.body.weightHint")}</small>
         </div>
         <label className="weight-input">
-          <input aria-label={`体重，单位${unit}`} inputMode="decimal" onChange={(event) => updateWeight(event.target.value)} placeholder="—" step="0.1" type="number" value={shownWeight === undefined ? "" : shownWeight.toFixed(1)} />
+          <input
+            aria-label={`体重，单位${unit}`}
+            inputMode="decimal"
+            onBlur={() => {
+              editingWeight.current = false;
+              setWeightDraft(shownWeight === undefined ? "" : shownWeight.toFixed(1));
+            }}
+            onChange={(event) => updateWeight(event.target.value)}
+            onFocus={() => { editingWeight.current = true; }}
+            placeholder="—"
+            step="0.1"
+            type="number"
+            value={weightDraft}
+          />
         </label>
         <div className="unit-switch" aria-label="体重单位">
           <button className={unit === "kg" ? "is-active" : ""} onClick={() => setUnit("kg")} type="button">{t("today.body.kg")}</button>

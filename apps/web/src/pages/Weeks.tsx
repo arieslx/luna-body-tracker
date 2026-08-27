@@ -3,7 +3,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Ellipsis } from "lucide-react"
 import { DayDetail } from "../components/DayDetail";
 import { WeeklyPreference } from "../components/WeeklyPreference";
 import { WeekSummary } from "../components/WeekSummary";
-import { dailyRecordToWeekDay, type WeeklyPreference as WeeklyPreferenceValue } from "./weekData";
+import { dailyRecordToWeekDay, parseMovementText, type WeeklyPreference as WeeklyPreferenceValue } from "./weekData";
 import { useLunaRecords } from "../data/record-context";
 import { currentWeekDateKeys, dateKeyToLocalDate, shiftDateKey, toLocalDateKey } from "../data/dates";
 import { useI18n } from "../i18n";
@@ -31,14 +31,8 @@ export function Weeks() {
       const { breakfast, lunch, dinner, snack } = day.meals;
       updateModule(day.recordDate, "meals", [breakfast, lunch, dinner, snack].some(Boolean) ? { breakfast, lunch, dinner, snack } : undefined);
       updateModule(day.recordDate, "water", day.water ? { value: Number(day.water), unit: "bowl", targetValue: 8 } : undefined);
-      const movement = day.movement.trim().match(/^(.*?)(?:\s+(\d+|60\+)\s*min)?$/);
-      const movementName = movement?.[1]?.trim();
-      const strengthNames = new Set(["力量", "核心", "深蹲", "拉伸", "瑜伽"]);
-      updateModule(day.recordDate, "exercise", movementName ? { entries: [{
-        category: strengthNames.has(movementName) ? "strength" : "cardio",
-        name: movementName,
-        minutes: movement?.[2] === "60+" ? 61 : Number(movement?.[2] || 30)
-      }] } : undefined);
+      const movementEntries = parseMovementText(day.movement);
+      updateModule(day.recordDate, "exercise", movementEntries.length ? { entries: movementEntries } : undefined);
       updateModule(day.recordDate, "poop", day.poop ? { count: Number.parseInt(day.poop) || 0, label: day.poop } : undefined);
       const kg = Number.parseFloat(day.weight);
       updateModule(day.recordDate, "weight", Number.isFinite(kg) && kg > 0 ? { kg } : undefined);
