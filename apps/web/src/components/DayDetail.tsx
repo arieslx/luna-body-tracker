@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { AngryIllustration, AnxiousIllustration, CalmIllustration, ConfusedIllustration, EmoIllustration, ExcitedIllustration, HappyIllustration, LovedIllustration, SadIllustration, SleepyIllustration, TiredIllustration } from "@luna-body-tracker/ui";
 import type { MoodId, WeekDay } from "../pages/weekData";
 import { mealOrder } from "../pages/weekData";
@@ -19,8 +20,31 @@ const moods = [
 
 export function DayDetail({ day, onChange, onBack }: { day: WeekDay; onChange: (day: WeekDay) => void; onBack: () => void }) {
   const { t } = useI18n();
+  const [movementDraft, setMovementDraft] = useState(day.movement);
+  const [weightDraft, setWeightDraft] = useState(day.weight);
+  const editingMovement = useRef(false);
+  const editingWeight = useRef(false);
+
+  useEffect(() => {
+    if (!editingMovement.current) setMovementDraft(day.movement);
+  }, [day.movement]);
+
+  useEffect(() => {
+    if (!editingWeight.current) setWeightDraft(day.weight);
+  }, [day.weight]);
+
   function patch(values: Partial<WeekDay>) {
     onChange({ ...day, ...values });
+  }
+
+  function commitMovement() {
+    editingMovement.current = false;
+    if (movementDraft !== day.movement) patch({ movement: movementDraft });
+  }
+
+  function commitWeight() {
+    editingWeight.current = false;
+    if (weightDraft !== day.weight) patch({ weight: weightDraft });
   }
 
   return (
@@ -49,12 +73,37 @@ export function DayDetail({ day, onChange, onBack }: { day: WeekDay; onChange: (
 
       <label className="day-detail-section day-detail-inline"><span><strong>{t("detail.water")}</strong><small>{t("detail.waterHint")}</small></span><span className="day-detail-unit"><input aria-label={t("detail.water")} inputMode="numeric" min="0" max="8" onChange={(event) => patch({ water: event.target.value })} type="number" value={day.water} /> {t("detail.cups")}</span></label>
 
-      <label className="day-detail-section day-detail-field"><span>{t("detail.movement")}</span><input aria-label={t("detail.movement")} onChange={(event) => patch({ movement: event.target.value })} placeholder={t("detail.movementPlaceholder")} value={day.movement} /></label>
+      <label className="day-detail-section day-detail-field"><span>{t("detail.movement")}</span><input
+        aria-label={t("detail.movement")}
+        onBlur={commitMovement}
+        onChange={(event) => setMovementDraft(event.target.value)}
+        onFocus={() => { editingMovement.current = true; }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+          event.preventDefault();
+          event.currentTarget.blur();
+        }}
+        placeholder={t("detail.movementPlaceholder")}
+        value={movementDraft}
+      /></label>
 
       <div className="day-detail-section">
         <h2>{t("detail.body")}</h2>
         <div className="day-detail-body-grid">
-          <label><span>{t("detail.weight")}</span><input aria-label={t("detail.weight")} onChange={(event) => patch({ weight: event.target.value })} placeholder="—" value={day.weight} /></label>
+          <label><span>{t("detail.weight")}</span><input
+            aria-label={t("detail.weight")}
+            inputMode="decimal"
+            onBlur={commitWeight}
+            onChange={(event) => setWeightDraft(event.target.value)}
+            onFocus={() => { editingWeight.current = true; }}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+              event.preventDefault();
+              event.currentTarget.blur();
+            }}
+            placeholder="—"
+            value={weightDraft}
+          /></label>
           <label><span>{t("detail.poop")}</span><input aria-label={t("detail.poop")} onChange={(event) => patch({ poop: event.target.value })} placeholder="—" value={day.poop} /></label>
         </div>
       </div>

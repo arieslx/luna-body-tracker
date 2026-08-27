@@ -24,6 +24,21 @@ export type WeekDay = {
 
 export type WeeklyPreference = { visibleMetrics: WeeklyMetric[] };
 
+const strengthMovementNames = new Set(["力量", "核心", "深蹲", "拉伸", "瑜伽"]);
+
+export function parseMovementText(value: string) {
+  return value.split(/\s*·\s*/).map((part) => {
+    const match = part.trim().match(/^(.*?)(?:\s+(\d+|60\+)\s*min)?$/);
+    const name = match?.[1]?.trim();
+    if (!name) return undefined;
+    return {
+      category: strengthMovementNames.has(name) ? "strength" as const : "cardio" as const,
+      name,
+      minutes: match?.[2] === "60+" ? 61 : Number(match?.[2] || 30)
+    };
+  }).filter((entry): entry is NonNullable<typeof entry> => entry !== undefined);
+}
+
 const foodLabels: Record<string, string> = {
   vegetable: "蔬菜", meat: "肉类", staple: "主食", milk: "牛奶", egg: "鸡蛋",
   oil: "油", fruit: "水果", snack: "零食", other: "其他"
